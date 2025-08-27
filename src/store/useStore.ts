@@ -7,6 +7,9 @@ interface User {
   isLoggedIn: boolean;
   role: "customer" | "provider" | "admin";
   avatar?: string;
+  status?: string;
+  bio?: string;
+  profileImage?: string;
 }
 
 interface Wallet {

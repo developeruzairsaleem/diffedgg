@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/sessions";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { ProfileSchema } from "@/validations/profile.validator";
 
 // GET handler to fetch current user data
 export const GET = async () => {
@@ -19,6 +20,7 @@ export const GET = async () => {
       select: {
         username: true,
         email: true,
+        bio: true,
         profileImage: true,
       },
     });
@@ -47,14 +49,22 @@ export const POST = async (request: NextRequest) => {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { username, email, bio } = await request.json();
+    const body = await request.json();
 
-    if (!username || !email) {
+    // Validate the request body with Zod
+    const validation = ProfileSchema.safeParse(body);
+
+    if (!validation.success) {
+      const errorMessage = validation.error.errors
+        .map((error) => `${error.path.join(".")}: ${error.message}`)
+        .join("; ");
       return NextResponse.json(
-        { error: "Username and email are required." },
+        { error: `Validation failed: ${errorMessage}` },
         { status: 400 }
       );
     }
+
+    const { username, email, bio, profileImage } = validation.data;
 
     // Check if the new username or email is already taken by ANOTHER user
     const existingUser = await prisma.user.findFirst({
@@ -85,9 +95,15 @@ export const POST = async (request: NextRequest) => {
       data: {
         username,
         email,
-        bio
+        bio,
+        profileImage,
       },
-      select: { username: true, email: true }, // Return the updated data
+      select: {
+        username: true,
+        email: true,
+        bio: true,
+        profileImage: true,
+      }, // Return the updated data
     });
 
     return NextResponse.json({ success: true, user: updatedUser });
