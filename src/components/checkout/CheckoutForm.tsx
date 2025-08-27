@@ -7,7 +7,7 @@ import {
   CardExpiryElement,
   CardCvcElement,
 } from "@stripe/react-stripe-js";
-import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { PayPalButtons } from "@paypal/react-paypal-js";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -54,6 +54,7 @@ export default function CheckoutForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [cardError, setCardError] = useState<string | null>(null);
+  const isPayPalEnabled = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
   const [paymentMethod, setPaymentMethod] = useState<"stripe" | "paypal">(
     "stripe"
   );
@@ -109,37 +110,7 @@ export default function CheckoutForm({
     }
   };
 
-  const handlePayPalPayment = async (data: FormData) => {
-    if (!paypalOrderId) {
-      setError("PayPal order not created. Please try again.");
-      return;
-    }
-
-    try {
-      // Capture the PayPal payment
-      const captureRes = await fetch("/api/capture-paypal-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderID: paypalOrderId }),
-      });
-
-      const captureJson = await captureRes.json();
-      if (!captureJson.success) {
-        setError(captureJson.error || "PayPal payment capture failed");
-        return;
-      }
-
-      await createOrder(
-        data,
-        "paypal",
-        undefined,
-        paypalOrderId,
-        captureJson.data.captureId
-      );
-    } catch (err) {
-      setError("PayPal payment failed. Please try again or contact support.");
-    }
-  };
+  // PayPal payments are now handled directly in the onApprove callback
 
   const createOrder = async (
     data: FormData,
@@ -193,7 +164,10 @@ export default function CheckoutForm({
       if (paymentMethod === "stripe") {
         await handleStripePayment(data);
       } else {
-        await handlePayPalPayment(data);
+        // PayPal payments are handled through the PayPal button's onApprove callback
+        setError(
+          "Please use the PayPal button above to complete your payment."
+        );
       }
     } finally {
       setLoading(false);
@@ -201,40 +175,76 @@ export default function CheckoutForm({
   };
 
   const createPayPalOrder = async () => {
+    console.log("Creating PayPal order...");
     try {
+      const requestData = {
+        subpackageId: subpackage.id,
+        customerEmail: "customer@example.com", // This should come from user context
+        numberOfGames: numberOfGames || 1,
+        numberOfTeammates: numberOfTeammates || 1,
+        rankName: rankName || "",
+      };
+
+      console.log("PayPal order request data:", requestData);
+
       const response = await fetch("/api/create-paypal-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subpackageId: subpackage.id,
-          customerEmail: "customer@example.com", // This should come from user context
-          currentELO,
-          targetELO,
-        }),
+        body: JSON.stringify(requestData),
       });
 
+      console.log("PayPal API response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("PayPal API error response:", errorText);
+        throw new Error(`API returned ${response.status}: ${errorText}`);
+      }
+
       const result = await response.json();
+      console.log("PayPal order creation result:", result);
+
       if (result.success) {
         setPaypalOrderId(result.data.orderId);
         return result.data.orderId;
       } else {
-        throw new Error(result.error);
+        console.error("PayPal order creation error:", result);
+        throw new Error(result.error || "Failed to create PayPal order");
       }
     } catch (error) {
-      setError("Failed to create PayPal order");
+      console.error("PayPal order creation failed:", error);
+      setError("Failed to create PayPal order: " + (error as Error).message);
       throw error;
     }
   };
 
-  const onPayPalApprove = async (data: any, actions: any) => {
+  const onPayPalApproveWithFormData = async (
+    data: any,
+    actions: any,
+    formData: FormData
+  ) => {
+    console.log("PayPal onApprove called with data:", data);
+    console.log("Form data:", formData);
+    setLoading(true);
+
     try {
-      const orderId = await createPayPalOrder();
-      if (orderId) {
-        // The payment will be captured in the PayPal button's onApprove
-        return actions.order.capture();
-      }
+      // Capture the payment
+      const captureDetails = await actions.order.capture();
+      console.log("PayPal capture successful:", captureDetails);
+
+      // Now create the order in our system
+      await createOrder(
+        formData,
+        "paypal",
+        undefined, // no stripe payment intent
+        data.orderID, // PayPal order ID
+        captureDetails.purchase_units[0].payments.captures[0].id // PayPal capture ID
+      );
     } catch (error) {
-      setError("PayPal order creation failed");
+      console.error("PayPal approval failed:", error);
+      setError("PayPal payment processing failed: " + (error as Error).message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -254,6 +264,7 @@ export default function CheckoutForm({
           </FormLabel>
           <FormControl asChild>
             <input
+              id="username"
               className={`w-full px-3 py-3 rounded border border-white bg-transparent text-[18px] text-white focus:outline-none ${lato.className}`}
               {...register("username")}
             />
@@ -272,6 +283,7 @@ export default function CheckoutForm({
           </FormLabel>
           <FormControl asChild>
             <input
+              id="discordTag"
               className={`w-full px-3 py-3 rounded border border-white bg-transparent text-[18px] text-white focus:outline-none ${lato.className}`}
               type="text"
               {...register("discordTag")}
@@ -291,6 +303,7 @@ export default function CheckoutForm({
           </FormLabel>
           <FormControl asChild>
             <input
+              id="notes"
               className={`w-full px-3 py-3 rounded border border-white bg-transparent text-[18px] text-white focus:outline-none ${lato.className}`}
               type="text"
               {...register("notes")}
@@ -309,30 +322,128 @@ export default function CheckoutForm({
         </h3>
 
         {/* Payment Method Selection */}
-        <div className="mb-6">
-          <div className="flex gap-4 mb-4">
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="stripe"
-                checked={paymentMethod === "stripe"}
-                onChange={() => setPaymentMethod("stripe")}
-                className="mr-2"
-              />
-              <span className="text-white">Credit Card (Stripe)</span>
-            </label>
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="paypal"
-                checked={paymentMethod === "paypal"}
-                onChange={() => setPaymentMethod("paypal")}
-                className="mr-2"
-              />
-              <span className="text-white">PayPal</span>
-            </label>
+        <div className="mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Stripe Payment Option */}
+            <div
+              className={`relative cursor-pointer rounded-xl p-4 border-2 transition-all duration-300 ${
+                paymentMethod === "stripe"
+                  ? "border-pink-500 bg-gradient-to-br from-pink-500/10 to-purple-500/10 shadow-lg shadow-pink-500/20"
+                  : "border-white/20 bg-white/5 hover:border-pink-300 hover:bg-white/10"
+              }`}
+              onClick={() => setPaymentMethod("stripe")}
+            >
+              <div className="flex items-center space-x-3">
+                <div
+                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                    paymentMethod === "stripe"
+                      ? "border-pink-500 bg-pink-500 shadow-lg shadow-pink-500/50"
+                      : "border-white/40"
+                  }`}
+                >
+                  {paymentMethod === "stripe" && (
+                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white text-lg font-semibold">
+                      Credit Card
+                    </span>
+                    <div className="flex space-x-1">
+                      <div className="w-8 h-5 bg-blue-600 rounded text-white text-xs flex items-center justify-center font-bold">
+                        VISA
+                      </div>
+                      <div className="w-8 h-5 bg-red-500 rounded text-white text-xs flex items-center justify-center font-bold">
+                        MC
+                      </div>
+                      <div className="w-8 h-5 bg-green-600 rounded text-white text-xs flex items-center justify-center font-bold">
+                        AE
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-300 text-sm mt-1">
+                    Secure payment via Stripe
+                  </p>
+                  {paymentMethod === "stripe" && (
+                    <div className="mt-2 flex items-center text-green-400 text-sm">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Selected
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* PayPal Payment Option */}
+            {isPayPalEnabled && (
+              <div
+                className={`relative cursor-pointer rounded-xl p-4 border-2 transition-all duration-300 ${
+                  paymentMethod === "paypal"
+                    ? "border-blue-500 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 shadow-lg shadow-blue-500/20"
+                    : "border-white/20 bg-white/5 hover:border-blue-300 hover:bg-white/10"
+                }`}
+                onClick={() => setPaymentMethod("paypal")}
+              >
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                      paymentMethod === "paypal"
+                        ? "border-blue-500 bg-blue-500 shadow-lg shadow-blue-500/50"
+                        : "border-white/40"
+                    }`}
+                  >
+                    {paymentMethod === "paypal" && (
+                      <div className="w-3 h-3 bg-white rounded-full"></div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white text-lg font-semibold">
+                        PayPal
+                      </span>
+                      <div className="flex items-center space-x-1">
+                        <div className="px-2 py-1 bg-blue-600 rounded text-white text-xs font-bold">
+                          PayPal
+                        </div>
+                        <div className="px-2 py-1 bg-yellow-500 rounded text-black text-xs font-bold">
+                          Pay Later
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-300 text-sm mt-1">
+                      Pay with your PayPal account
+                    </p>
+                    {paymentMethod === "paypal" && (
+                      <div className="mt-2 flex items-center text-green-400 text-sm">
+                        <svg
+                          className="w-4 h-4 mr-1"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Selected
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -442,20 +553,76 @@ export default function CheckoutForm({
         )}
 
         {/* PayPal Payment Button */}
-        {paymentMethod === "paypal" && (
-          <div className="mb-6">
-            <PayPalScriptProvider
-              options={{
-                "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
-                currency: "USD",
-              }}
-            >
-              <PayPalButtons
-                createOrder={createPayPalOrder}
-                onApprove={onPayPalApprove}
-                style={{ layout: "horizontal" }}
-              />
-            </PayPalScriptProvider>
+        {paymentMethod === "paypal" && isPayPalEnabled && (
+          <div className="mb-8">
+            <div className="bg-white/5 rounded-lg p-4 border border-white/20">
+              <div className="mb-4">
+                <h4 className="text-white font-semibold text-lg mb-2">
+                  Complete Payment with PayPal
+                </h4>
+                <p className="text-gray-300 text-sm">
+                  Click the button below to securely pay with PayPal
+                </p>
+              </div>
+              <div className="paypal-button-container">
+                <PayPalButtons
+                  createOrder={createPayPalOrder}
+                  onApprove={(data, actions) => {
+                    // Get current form data before processing PayPal
+                    const formData = {
+                      username:
+                        (
+                          document.getElementById(
+                            "username"
+                          ) as HTMLInputElement
+                        )?.value || "User",
+                      discordTag:
+                        (
+                          document.getElementById(
+                            "discordTag"
+                          ) as HTMLInputElement
+                        )?.value || "User Discord Tag",
+                      notes:
+                        (document.getElementById("notes") as HTMLInputElement)
+                          ?.value || "",
+                      cardholderName: "",
+                    };
+                    return onPayPalApproveWithFormData(data, actions, formData);
+                  }}
+                  onError={(err) => {
+                    console.error("PayPal button error:", err);
+                    setError(
+                      "PayPal error occurred. Please try again or use credit card."
+                    );
+                  }}
+                  onCancel={() => {
+                    console.log("PayPal payment cancelled");
+                    setError("PayPal payment was cancelled.");
+                  }}
+                  style={{
+                    layout: "vertical",
+                    color: "gold",
+                    shape: "rect",
+                    label: "paypal",
+                    height: 50,
+                  }}
+                />
+              </div>
+              <div className="mt-3 flex items-center justify-center text-gray-400 text-xs">
+                <svg
+                  className="w-3 h-3 mr-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Secured by PayPal
+              </div>
+            </div>
           </div>
         )}
 
@@ -463,18 +630,42 @@ export default function CheckoutForm({
           <div className="text-pink-500 mb-4 text-sm">{error || cardError}</div>
         )}
 
-        <button
-          type="submit"
-          className="py-6 text-center w-full bg-gradient-to-r rounded-full from-pink-500 via-purple-400 to-cyan-400 hover:scale-105 transition-all cursor-pointer text-white text-[24px] mt-16 disabled:opacity-50"
-          disabled={
-            !isValid ||
-            loading ||
-            isSubmitting ||
-            (paymentMethod === "paypal" && !paypalOrderId)
-          }
-        >
-          {loading || isSubmitting ? "Processing..." : "Subscribe"}
-        </button>
+        {/* Only show submit button for Stripe payments */}
+        {paymentMethod === "stripe" && (
+          <button
+            type="submit"
+            className="py-6 text-center w-full bg-gradient-to-r rounded-full from-pink-500 via-purple-400 to-cyan-400 hover:scale-105 transition-all cursor-pointer text-white text-[24px] mt-16 disabled:opacity-50"
+            disabled={!isValid || loading || isSubmitting}
+          >
+            {loading || isSubmitting ? "Processing..." : "Subscribe"}
+          </button>
+        )}
+
+        {/* For PayPal, show instruction */}
+        {paymentMethod === "paypal" && (
+          <div className="text-center py-6">
+            <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-lg p-4 border border-blue-500/20">
+              <div className="flex items-center justify-center space-x-2 text-blue-400 text-lg font-medium">
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span>Complete your payment using the PayPal button above</span>
+              </div>
+              <p className="text-gray-300 text-sm mt-2">
+                You'll be redirected to PayPal to complete your transaction
+                securely
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </Form>
   );

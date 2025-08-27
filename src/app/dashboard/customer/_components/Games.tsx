@@ -4,6 +4,7 @@ import { message } from "antd";
 import SafeImage from "@/components/ui/SafeImage";
 import { useRouter } from "next/navigation";
 import GamesSkeleton from "@/components/ui/GamesSkeleton"; // Import the new Games skeleton
+import { useStore } from "@/store/useStore";
 
 const GamesComponent = () => {
   const [numGamesMap, setNumGamesMap] = useState<{ [key: string]: number }>({});
@@ -23,6 +24,37 @@ const GamesComponent = () => {
   const [targetELO, setTargetELO] = useState<number>(0);
   const [currentStep, setCurrentStep] = useState(1);
   const router = useRouter();
+  const store = useStore();
+
+  // Function to refresh wallet data after payment
+  const refreshWalletData = async () => {
+    try {
+      const wallet = await fetch("/api/wallet").then((res) => res.json());
+      const walletData = {
+        id: wallet.id,
+        balance: wallet.balance,
+        currency: wallet.currency,
+      };
+      store.setWallet(walletData);
+
+      const tx = await fetch("/api/transaction/me").then((res) => res.json());
+      const txData = tx.map((idTx: any) => {
+        return {
+          id: idTx.id,
+          type: idTx.type,
+          amount: idTx.amount,
+          walletId: idTx.walletId,
+          createdAt: idTx.createdAt,
+          description: idTx.description,
+          status: idTx.status,
+          paymentMethod: idTx.paymentMethod,
+        };
+      });
+      store.setTransactions(txData);
+    } catch (error) {
+      console.error("Error refreshing wallet data:", error);
+    }
+  };
 
   // Reset selected service when game changes
   useEffect(() => {
@@ -212,6 +244,9 @@ const GamesComponent = () => {
       if (response.ok && result.success) {
         message.success("Payment successful! Redirecting to your order.");
         router.push(`/dashboard/customer/orders/${result.data.id}/pending`);
+
+        // Refresh wallet data in store after redirect (in background)
+        refreshWalletData();
       } else {
         message.error(result.error || "Payment failed. Please try again.");
       }

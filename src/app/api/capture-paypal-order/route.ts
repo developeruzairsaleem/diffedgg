@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { paypalClient } from "../../../lib/paypal";
 import { cookies } from "next/headers";
 import { decrypt } from "@/lib/sessions";
-import paypal from "@paypal/paypal-server-sdk";
+// @ts-ignore - PayPal checkout SDK doesn't have official types
+import checkoutNodeJssdk from "@paypal/checkout-server-sdk";
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Capture the PayPal order
-    const request = new paypal.orders.OrdersCaptureRequest(orderID);
+    const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(orderID);
     request.prefer("return=representation");
 
     const capture = await paypalClient.execute(request);
@@ -65,4 +66,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

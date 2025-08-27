@@ -274,13 +274,40 @@ export default function CheckoutPage() {
           </div>
         </div>
         <div className="form w-full mt-20 lg:mt-0 lg:ml-10 lg:justify-self-start xl:justify-self-end ">
-          <PayPalScriptProvider
-            options={{
-              clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
-              currency: "USD",
-            }}
-          >
-            {clientSecret && (
+          {process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ? (
+            <PayPalScriptProvider
+              options={{
+                clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
+                currency: "USD",
+                intent: "capture",
+                vault: false,
+                commit: true,
+                components: "buttons",
+                "enable-funding": "venmo,paylater,card",
+                "disable-funding": "",
+                "buyer-country": "US",
+                locale: "en_US",
+                debug: process.env.NODE_ENV === "development",
+              }}
+            >
+              {clientSecret && (
+                <Elements stripe={stripePromise}>
+                  <CheckoutForm
+                    numberOfGames={Number(searchParams?.get("numberOfGames"))}
+                    numberOfTeammates={Number(
+                      searchParams?.get("numberOfTeammates")
+                    )}
+                    rankName={searchParams?.get("rankName") || ""}
+                    subpackage={subpackage}
+                    finalPrice={finalPrice}
+                    clientSecret={clientSecret}
+                  />
+                </Elements>
+              )}
+            </PayPalScriptProvider>
+          ) : (
+            // Fallback to Stripe-only if PayPal is not configured
+            clientSecret && (
               <Elements stripe={stripePromise}>
                 <CheckoutForm
                   numberOfGames={Number(searchParams?.get("numberOfGames"))}
@@ -293,8 +320,8 @@ export default function CheckoutPage() {
                   clientSecret={clientSecret}
                 />
               </Elements>
-            )}
-          </PayPalScriptProvider>
+            )
+          )}
         </div>
       </div>
     </div>
