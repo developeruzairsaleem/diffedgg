@@ -10,10 +10,13 @@ export async function GET(req: NextRequest) {
 
     const packageId: string = searchParams?.get("subpackageId") || "";
     const customerEmail: string = searchParams?.get("email") || "";
-    const currentELO: number = Number(searchParams?.get("currentELO"));
-    const targetELO: number = Number(searchParams?.get("targetELO"));
+    const rankName: string = searchParams?.get("rankName") || "";
+    const numberOfGames: number = Number(searchParams?.get("numberOfGames"));
+    const numberOfTeammates: number = Number(
+      searchParams?.get("numberOfTeammates")
+    );
 
-    if (!packageId || !customerEmail) {
+    if (!packageId || !customerEmail || !numberOfGames || !numberOfTeammates) {
       return NextResponse.json(
         { error: "DATA NOT PROVIDED for query params", success: false },
         { status: 400 }
@@ -56,15 +59,22 @@ export async function GET(req: NextRequest) {
         { status: 400 }
       );
     }
-    let totalPriceInCents;
+    let totalPriceInCents = subpackage.price! * 100;
     // calculate price in cents
-    if (!currentELO && !targetELO) {
-      totalPriceInCents = subpackage.price! * 100;
-    } else {
-      totalPriceInCents =
-        (subpackage.price +
-          subpackage.basePricePerELO! * (targetELO - currentELO)) *
-        100;
+
+    if (rankName) {
+      totalPriceInCents +=
+        (subpackage.ranks as any[])?.find((rank: any) => rank.name === rankName)
+          ?.additionalCost * 100 || 0;
+    }
+
+    if (numberOfGames) {
+      totalPriceInCents *= numberOfGames;
+    }
+    if (subpackage.type === "pergame") {
+      totalPriceInCents *= subpackage.requiredProviders;
+    } else if (subpackage.type === "perteammate") {
+      totalPriceInCents *= numberOfTeammates;
     }
 
     // create a payment intent for the customer
@@ -107,8 +117,9 @@ export async function GET(req: NextRequest) {
           amount: totalPriceInCents,
           currency: "usd",
           subpackage,
-          currentELO,
-          targetELO,
+          rankName,
+          numberOfGames,
+          numberOfTeammates,
           finalPrice: Math.round(totalPriceInCents / 100),
         },
       },

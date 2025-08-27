@@ -34,16 +34,18 @@ type FormData = z.infer<typeof schema>;
 
 interface CheckoutFormProps {
   subpackage: any;
-  currentELO: number;
-  targetELO: number;
+  numberOfGames: number;
+  numberOfTeammates: number;
+  rankName: string;
   finalPrice: number;
   clientSecret?: string;
 }
 
 export default function CheckoutForm({
   subpackage,
-  currentELO,
-  targetELO,
+  numberOfGames,
+  numberOfTeammates,
+  rankName,
   finalPrice,
   clientSecret,
 }: CheckoutFormProps) {
@@ -160,8 +162,9 @@ export default function CheckoutForm({
           discordTag: data.discordTag,
           notes: data.notes,
           discordUsername: data.username,
-          currentELO,
-          targetELO,
+          numberOfGames,
+          numberOfTeammates,
+          rankName,
           finalPrice,
         }),
       });
@@ -476,4 +479,3 @@ export default function CheckoutForm({
     </Form>
   );
 }
-

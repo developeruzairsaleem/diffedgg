@@ -165,8 +165,8 @@ const GamesComponent = () => {
     }
     const choosedPackage = { ...subpackage };
     console.log("choosedPackage", choosedPackage);
-    console.log("no of games", numGamesMap[selectedSubpackage.id]);
-    console.log("no of teammates", numTeammatesMap[selectedSubpackage.id]);
+    console.log("no of games", numGamesMap[choosedPackage.id]);
+    console.log("no of teammates", numTeammatesMap[choosedPackage.id]);
     setSelectedSubpackage(subpackage);
     setIsCheckoutModalOpen(true);
   };

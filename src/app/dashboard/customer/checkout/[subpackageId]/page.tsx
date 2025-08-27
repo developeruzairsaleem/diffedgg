@@ -35,29 +35,31 @@ export default function CheckoutPage() {
     // Only fetch if email is available just checking for loggedin status
     if (!store.user?.email) return;
 
-    console.log("Fetching package and creating intent...", searchParams?.get("rankName"));
-    console.log("Fetching package and creating intent...", searchParams?.get("numberOfGames"));
-    console.log("Fetching package and creating intent...", searchParams?.get("numberOfTeammates"));
-
-
+    console.log(
+      "Fetching package and creating intent...",
+      searchParams?.get("rankName")
+    );
+    console.log(
+      "Fetching package and creating intent...",
+      searchParams?.get("numberOfGames")
+    );
+    console.log(
+      "Fetching package and creating intent...",
+      searchParams?.get("numberOfTeammates")
+    );
 
     async function fetchPackageAndCreateIntent() {
       setLoading(true);
       try {
-        const currentELO = Number(searchParams?.get("currentELO"));
-        const targetELO = Number(searchParams?.get("targetELO"));
-        let response;
-        if (!currentELO && !targetELO) {
-          response = await fetch(
-            `/api/create-payment-intent?subpackageId=${subpackageId}&email=${store.user?.email}`,
-            { method: "GET" }
-          );
-        } else {
-          response = await fetch(
-            `/api/create-payment-intent?subpackageId=${subpackageId}&email=${store.user?.email}&currentELO=${currentELO}&targetELO=${targetELO}`,
-            { method: "GET" }
-          );
-        }
+        const response = await fetch(
+          `/api/create-payment-intent?subpackageId=${subpackageId}&email=${
+            store.user?.email
+          }&rankName=${searchParams?.get("rankName") || ""}&numberOfGames=${
+            searchParams?.get("numberOfGames") || ""
+          }&numberOfTeammates=${searchParams?.get("numberOfTeammates") || ""}`,
+          { method: "GET" }
+        );
+
         const intentResponse = await response.json();
         if (!intentResponse?.success) {
           setPageError(
@@ -68,12 +70,8 @@ export default function CheckoutPage() {
         }
         setClientSecret(intentResponse.data.clientSecret);
         setSubpackage(intentResponse.data.subpackage);
-        console.log('fetched subpackage:', subpackage);
-        if (intentResponse.data.currentELO || intentResponse.data.targetELO) {
-          setCurrentELO(intentResponse.data.currentELO);
-          setTargetELO(intentResponse.data.targetELO);
-          setFinalPrice(intentResponse.data.finalPrice);
-        }
+        console.log("fetched subpackage:", subpackage);
+        setFinalPrice(intentResponse.data.finalPrice);
       } catch (error) {
         console.error(error);
         setPageError("Something went wrong");
@@ -165,68 +163,113 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-
-
           {/* Price breakdown info */}
-          <div className="sm:pl-6 text-[24px] mt-12">
-            <h4 className="mb-6">Price Breakdown:</h4>
-            <div className="flex justify-between w-[20rem]">
-              <ul className="pl-5 list-disc" style={{ lineHeight: "230%" }}>
+          <div className="mt-12">
+            <h4
+              className={`text-2xl font-bold text-white mb-6 ${orbitron.className}`}
+            >
+              Price Breakdown
+            </h4>
+            <div
+              className="rounded-xl p-6 backdrop-blur-sm border border-white/20"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+              }}
+            >
+              <div className="space-y-4">
+                {/* ELO Range - only if dynamic pricing */}
                 {subpackage.dynamicPricing && (
-                  <li>
-                    ELO Range:
-                  </li>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-b border-white/10">
+                    <span className={`text-gray-300 text-lg ${lato.className}`}>
+                      ELO Range
+                    </span>
+                    <span className="text-cyan-400 font-semibold text-lg">
+                      {`${subpackage.minELO} - ${subpackage.maxELO}`}
+                    </span>
+                  </div>
                 )}
-                <li>Base Service:</li>
-                {/* <li>Add-Ons:</li> */}
-                {/* Show rankName, numberOfGames, numberOfTeammates inside the ul */}
-                {searchParams?.get("rankName") && (
-                  <li>Rank Name: </li>
-                )}
-                <li>No. of Games:</li>
-                <li>No. of Teammates:</li>
-                <li>Total:</li>
-              </ul>
-              <ul style={{ lineHeight: "230%" }}>
-                {/* @ts-ignore */}
-                {subpackage.dynamicPricing && (
-                  <li>
-                    {Number(subpackage.maxELO) - Number(subpackage.minELO)}
-                  </li>
-                )}
-                <li>${subpackage.price}</li>
-                {/* <li>
-                  $
-                  {currentELO || targetELO ? finalPrice - subpackage.price : 0}
-                </li> */}
-                {searchParams?.get("rankName") && (
-                  <li>{searchParams.get("rankName")}</li>
-                )}
-                <li> {searchParams?.get("numberOfGames") || "1"}</li>
-                <li> {searchParams?.get("numberOfTeammates") || "1"}</li>
-                <li>
-                  {/* @ts-ignore */}$
-                  {/* {currentELO || targetELO ? finalPrice : subpackage.price} */}
 
-                  {(() => {
-                    // Get rankName and amounts
-                    const rankName = searchParams?.get("rankName");
-                    let rankAmount = 0;
-                    if (subpackage.ranks && rankName) {
-                      const foundRank = subpackage.ranks.find((r: any) => r.name === rankName);
-                      rankAmount = foundRank?.additionalCost || 0;
-                    }
-                    // Get number of games and teammates
-                    const numGames = Number(searchParams?.get("numberOfGames")) || 1;
-                    const numTeammates = Number(searchParams?.get("numberOfTeammates")) || 1;
-                    // Calculate base price
-                    const basePrice = (Number(subpackage.price) || 0) + rankAmount;
-                    // Multiply if more than 1
-                    const totalPrice = basePrice * (numGames > 1 ? numGames : 1) * (numTeammates > 1 ? numTeammates : 1);
-                    return totalPrice.toFixed(2);
-                  })()}
-                </li>
-              </ul>
+                {/* Base Service */}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-b border-white/10">
+                  <span className={`text-gray-300 text-lg ${lato.className}`}>
+                    Base Service
+                  </span>
+                  <span className="text-green-400 font-bold text-lg">
+                    ${subpackage.price}
+                  </span>
+                </div>
+
+                {/* Rank Name - only if selected */}
+                {searchParams?.get("rankName") && (
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-b border-white/10">
+                    <span className={`text-gray-300 text-lg ${lato.className}`}>
+                      Selected Rank
+                    </span>
+                    <span className="text-pink-400 font-semibold text-lg inline-flex items-center gap-2">
+                      <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                      {searchParams.get("rankName")}
+                    </span>
+                  </div>
+                )}
+
+                {/* Number of Games */}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-b border-white/10">
+                  <span className={`text-gray-300 text-lg ${lato.className}`}>
+                    Number of Games
+                  </span>
+                  <span className="text-purple-400 font-semibold text-lg inline-flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {searchParams?.get("numberOfGames")} game
+                    {Number(searchParams?.get("numberOfGames")) > 1 ? "s" : ""}
+                  </span>
+                </div>
+
+                {/* Number of Teammates */}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-b border-white/10">
+                  <span className={`text-gray-300 text-lg ${lato.className}`}>
+                    Number of Teammates
+                  </span>
+                  <span className="text-blue-400 font-semibold text-lg inline-flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                    </svg>
+                    {searchParams?.get("numberOfTeammates")} teammate
+                    {Number(searchParams?.get("numberOfTeammates")) > 1
+                      ? "s"
+                      : ""}
+                  </span>
+                </div>
+
+                {/* Total - highlighted */}
+                <div className="mt-6 pt-4 border-t-2 border-gradient-to-r from-pink-500 to-cyan-400">
+                  <div
+                    className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 rounded-lg px-4"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, rgba(238, 44, 129, 0.1) 0%, rgba(88, 185, 227, 0.1) 100%)",
+                    }}
+                  >
+                    <span
+                      className={`text-white text-xl font-bold ${orbitron.className}`}
+                    >
+                      Total Amount
+                    </span>
+                    <span className="text-3xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+                      ${finalPrice.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -240,8 +283,11 @@ export default function CheckoutPage() {
             {clientSecret && (
               <Elements stripe={stripePromise}>
                 <CheckoutForm
-                  currentELO={currentELO}
-                  targetELO={targetELO}
+                  numberOfGames={Number(searchParams?.get("numberOfGames"))}
+                  numberOfTeammates={Number(
+                    searchParams?.get("numberOfTeammates")
+                  )}
+                  rankName={searchParams?.get("rankName") || ""}
                   subpackage={subpackage}
                   finalPrice={finalPrice}
                   clientSecret={clientSecret}
