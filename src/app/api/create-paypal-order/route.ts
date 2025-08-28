@@ -9,6 +9,17 @@ import checkoutNodeJssdk from "@paypal/checkout-server-sdk";
 export async function POST(req: NextRequest) {
   try {
     console.log("PayPal order creation started");
+    console.log("Environment check:", {
+      NODE_ENV: process.env.NODE_ENV,
+      PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID ? "SET" : "NOT SET",
+      NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+        ? "SET"
+        : "NOT SET",
+      PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET
+        ? "SET"
+        : "NOT SET",
+    });
+
     const {
       subpackageId,
       customerEmail,
@@ -102,6 +113,26 @@ export async function POST(req: NextRequest) {
 
     // Create PayPal order
     console.log("Creating PayPal order...");
+    console.log("Initializing PayPal client...");
+
+    try {
+      // Test PayPal client initialization
+      if (!paypalClient) {
+        throw new Error("PayPal client not initialized");
+      }
+      console.log("PayPal client initialized successfully");
+    } catch (clientError) {
+      console.error("PayPal client initialization error:", clientError);
+      return NextResponse.json(
+        {
+          error: "PayPal client initialization failed",
+          details: (clientError as Error).message,
+          success: false,
+        },
+        { status: 500 }
+      );
+    }
+
     const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
     request.prefer("return=representation");
 
@@ -135,6 +166,7 @@ export async function POST(req: NextRequest) {
     console.log("PayPal order payload:", JSON.stringify(orderPayload, null, 2));
     request.requestBody(orderPayload);
 
+    console.log("Executing PayPal order request...");
     const order = await paypalClient.execute(request);
     console.log("PayPal order created successfully:", order.result.id);
 
@@ -151,9 +183,16 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Error creating PayPal order:", error);
+    console.error("Error details:", {
+      message: (error as Error).message,
+      stack: (error as Error).stack,
+      name: (error as Error).name,
+    });
+
     return NextResponse.json(
       {
         error: "Failed to create PayPal order",
+        details: (error as Error).message,
         success: false,
       },
       { status: 500 }
