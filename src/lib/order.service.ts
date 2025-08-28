@@ -243,6 +243,7 @@ export class OrderService {
       price: order.price,
       status: order.status,
       notes: order.notes || undefined,
+      cancelReason: order.cancelReason || undefined,
       rerollsLeft: order.rerollsLeft,
       approvedCount: order.assignments.reduce(
         (acc, item) =>

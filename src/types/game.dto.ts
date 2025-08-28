@@ -255,13 +255,15 @@ export interface SubpackageCreateRequest {
   name: string;
   description: string;
   price: number;
-  requiredProviders: number;
+  requiredProviders?: number;
   duration?: string;
   dynamicPricing: boolean;
   basePricePerELO?: number;
   minELO?: number;
   maxELO?: number;
   serviceId: string;
+  type: "pergame" | "perteammate";
+  ranks?: Array<{ name: string; additionalCost: number }>;
 }
 
 export interface GameStatsDto {

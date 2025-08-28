@@ -284,6 +284,21 @@ export default function OrderDetail({ orderId }: OrderDetailProps) {
             <Descriptions.Item label="Price">
               ${order.price.toFixed(2)}
             </Descriptions.Item>
+            <Descriptions.Item label="No. of Games">
+              {(order as any).gamesCount || "-"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Rank">
+              {(order as any).rank?.name ? (
+                <Space>
+                  <span>{(order as any).rank.name}</span>
+                  {(order as any).rank.additionalCost && (
+                    <Tag color="blue">+${(order as any).rank.additionalCost}</Tag>
+                  )}
+                </Space>
+              ) : (
+                "-"
+              )}
+            </Descriptions.Item>
             <Descriptions.Item label="Service">
               <Space>
                 <Avatar
@@ -312,6 +327,19 @@ export default function OrderDetail({ orderId }: OrderDetailProps) {
             {order.notes && (
               <Descriptions.Item label="Notes" span={2}>
                 {order.notes}
+              </Descriptions.Item>
+            )}
+            {order.status === "CANCELLED" && order.cancelReason && (
+              <Descriptions.Item label="Cancellation Reason" span={2}>
+                <div style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#fff2f0',
+                  border: '1px solid #ffccc7',
+                  borderRadius: '6px',
+                  color: '#a8071a'
+                }}>
+                  {order.cancelReason}
+                </div>
               </Descriptions.Item>
             )}
           </Descriptions>

@@ -203,71 +203,71 @@ const WelcomeCard = ({ user, loading }: { user: any; loading: boolean }) => {
 };
 
 const DashboardSkeleton = () => (
-  <div className="min-h-screen p-4 md:p-6 animate-pulse">
+  <div className="min-h-screen p-3 sm:p-4 md:p-6 animate-pulse">
     <div className="max-w-7xl mx-auto">
       {/* Welcome Card Skeleton */}
       <div
-        className="rounded-xl p-1 mb-8"
+        className="rounded-lg sm:rounded-xl p-1 mb-6 sm:mb-8"
         style={{
           background:
             "linear-gradient(135deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
         }}
       >
-        <div className="bg-[#5E2047] rounded-xl p-8">
-          <div className="h-8 w-64 bg-gray-600 rounded mb-3"></div>
-          <div className="h-5 w-96 bg-gray-600 rounded mb-6"></div>
-          <div className="flex gap-4">
-            <div className="h-12 w-32 bg-gray-600 rounded-lg"></div>
-            <div className="h-12 w-32 bg-gray-600 rounded-lg"></div>
+        <div className="bg-[#5E2047] rounded-lg sm:rounded-xl p-4 sm:p-6 md:p-8">
+          <div className="h-6 sm:h-7 md:h-8 w-48 sm:w-56 md:w-64 bg-gray-600 rounded mb-2 sm:mb-3"></div>
+          <div className="h-4 sm:h-5 w-72 sm:w-80 md:w-96 bg-gray-600 rounded mb-4 sm:mb-6"></div>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="h-10 sm:h-11 md:h-12 w-full sm:w-28 md:w-32 bg-gray-600 rounded-lg"></div>
+            <div className="h-10 sm:h-11 md:h-12 w-full sm:w-28 md:w-32 bg-gray-600 rounded-lg"></div>
           </div>
         </div>
       </div>
 
       {/* Stats Grid Skeleton */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="rounded-xl p-1"
+            className="rounded-lg sm:rounded-xl p-1"
             style={{
               background:
                 "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
             }}
           >
-            <div className="bg-[#5E2047] rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gray-600 rounded-xl"></div>
-                <div className="w-6 h-6 bg-gray-600 rounded"></div>
+            <div className="bg-[#5E2047] rounded-lg sm:rounded-xl p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-600 rounded-lg sm:rounded-xl"></div>
+                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-600 rounded"></div>
               </div>
-              <div className="h-4 w-20 bg-gray-600 rounded mb-2"></div>
-              <div className="h-8 w-16 bg-gray-600 rounded"></div>
+              <div className="h-3 sm:h-4 w-16 sm:w-20 bg-gray-600 rounded mb-2"></div>
+              <div className="h-6 sm:h-8 w-12 sm:w-16 bg-gray-600 rounded"></div>
             </div>
           </div>
         ))}
       </div>
 
       {/* Recent Activity & Quick Actions Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Recent Orders Skeleton */}
         <div
-          className="lg:col-span-2 rounded-xl p-1"
+          className="lg:col-span-2 rounded-lg sm:rounded-xl p-1"
           style={{
             background:
               "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
           }}
         >
-          <div className="bg-[#5E2047] rounded-xl p-6">
-            <div className="h-6 w-32 bg-gray-600 rounded mb-6"></div>
-            <div className="space-y-4">
+          <div className="bg-[#5E2047] rounded-lg sm:rounded-xl p-4 sm:p-6">
+            <div className="h-5 sm:h-6 w-28 sm:w-32 bg-gray-600 rounded mb-4 sm:mb-6"></div>
+            <div className="space-y-3 sm:space-y-4">
               {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="bg-gray-800/30 rounded-lg p-4">
+                <div key={index} className="bg-gray-800/30 rounded-lg p-3 sm:p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-600 rounded-lg"></div>
-                    <div className="flex-1">
-                      <div className="h-4 w-32 bg-gray-600 rounded mb-2"></div>
-                      <div className="h-3 w-24 bg-gray-600 rounded"></div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-600 rounded-lg"></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="h-3 sm:h-4 w-24 sm:w-32 bg-gray-600 rounded mb-1 sm:mb-2"></div>
+                      <div className="h-2 sm:h-3 w-16 sm:w-24 bg-gray-600 rounded"></div>
                     </div>
-                    <div className="h-6 w-20 bg-gray-600 rounded-full"></div>
+                    <div className="h-5 sm:h-6 w-16 sm:w-20 bg-gray-600 rounded-full"></div>
                   </div>
                 </div>
               ))}
@@ -277,17 +277,17 @@ const DashboardSkeleton = () => (
 
         {/* Quick Actions Skeleton */}
         <div
-          className="rounded-xl p-1"
+          className="rounded-lg sm:rounded-xl p-1"
           style={{
             background:
               "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
           }}
         >
-          <div className="bg-[#5E2047] rounded-xl h-full p-2">
-            <div className="h-6 w-32 bg-gray-600 rounded mb-6"></div>
-            <div className="space-y-3 h-full">
+          <div className="bg-[#5E2047] rounded-lg sm:rounded-xl h-full p-3 sm:p-4 md:p-6">
+            <div className="h-5 sm:h-6 w-24 sm:w-28 md:w-32 bg-gray-600 rounded mb-4 sm:mb-6"></div>
+            <div className="space-y-3 sm:space-y-4 h-full">
               {Array.from({ length: 5 }).map((_, index) => (
-                <div key={index} className="h-16 bg-gray-600  rounded-lg"></div>
+                <div key={index} className="h-12 sm:h-14 md:h-16 bg-gray-600 rounded-lg"></div>
               ))}
             </div>
           </div>

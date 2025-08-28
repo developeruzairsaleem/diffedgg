@@ -637,7 +637,7 @@ export class GameService {
     return await prisma.subpackage.create({
       data: {
         ...data,
-        requiredProviders: Number(data.requiredProviders),
+        requiredProviders: Number(data?.requiredProviders) || 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

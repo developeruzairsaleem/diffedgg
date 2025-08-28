@@ -148,6 +148,7 @@ export async function GET(request: NextRequest) {
       requiredCount: order.requiredCount,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
+      gamesCount: order.gamesCount,
       assignmentsCount: order.assignments.length,
       assignments: order.assignments.map((assignment: any) => ({
         id: assignment.id,

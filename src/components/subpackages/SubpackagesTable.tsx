@@ -18,6 +18,8 @@ import {
   InputNumber,
   Switch,
   message,
+  Divider,
+  Radio,
 } from "antd";
 import {
   EyeOutlined,
@@ -59,13 +61,36 @@ export default function SubpackagesTable() {
     return () => clearTimeout(id);
   }, [searchText, setParams]);
 
-  const handleCreateSubpackage = async (values: SubpackageCreateRequest) => {
+  const handleCreateSubpackage = async (values: any) => {
+    console.log('SHABIR VALUES: ', values);
     try {
       setCreateLoading(true);
+    console.log('SHABIR VALUES: ', values);
+    
+      // Extract form-specific fields for internal use and exclude them from API payload
+      const { providerType, enableRanks, ranks, ...apiValues } = values;
+
+      // Process the form values
+      const processedValues: any = {
+        ...apiValues,
+        // Set type based on provider configuration
+        type: providerType === "static" ? "pergame" : "perteammate",
+      };
+
+      // Only include ranks if they exist and are not empty
+      if (enableRanks && ranks && ranks.length > 0) {
+        processedValues.ranks = ranks;
+      }
+
+      // For dynamic type (perteammate), remove requiredProviders as it's not needed
+      if (processedValues.type === "perteammate") {
+        delete processedValues.requiredProviders;
+      }
+
       const response = await fetch("/api/admin/subpackages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(processedValues),
       });
 
       const result = await response.json();
@@ -355,7 +380,14 @@ export default function SubpackagesTable() {
         footer={null}
         width={600}
       >
-        <Form form={form} layout="vertical" onFinish={handleCreateSubpackage}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={(data)=>handleCreateSubpackage(data)}
+          onFinishFailed={(errorInfo) => {
+            console.log('Form validation failed:', errorInfo);
+          }}
+        >
           <Form.Item
             name="name"
             label="Package Name"
@@ -420,6 +452,130 @@ export default function SubpackagesTable() {
               </Form.Item>
             </Col>
           </Row>
+          
+          <Form.Item
+            name="providerType"
+            label="Provider Configuration"
+            rules={[
+              {
+                required: true,
+                message: "Provider configuration is required",
+              },
+            ]}
+            initialValue="static"
+          >
+            <Radio.Group>
+              <Radio value="static">Static</Radio>
+              <Radio value="dynamic">Dynamic</Radio>
+            </Radio.Group>
+          </Form.Item>
+
+          <Form.Item dependencies={["providerType"]} noStyle>
+            {({ getFieldValue }) =>
+              getFieldValue("providerType") === "static" ? (
+                <Form.Item
+                  name="requiredProviders"
+                  label="Required Providers"
+                  rules={[
+                    {
+                      required: true,
+                      message: "No of Providers is required",
+                    },
+                  ]}
+                >
+                  <InputNumber min={1} style={{ width: "100%" }} />
+                </Form.Item>
+              ) : (
+                <div style={{
+                  padding: "12px 16px",
+                  backgroundColor: "#f6f8fa",
+                  border: "1px solid #d1d9e0",
+                  borderRadius: "6px",
+                  marginBottom: "16px"
+                }}>
+                  <p style={{ margin: 0, color: "#656d76" }}>
+                    This allows the customer to choose more than 1 teammates for a subpackage
+                  </p>
+                </div>
+              )
+            }
+          </Form.Item>
+
+          <Form.Item
+            name="enableRanks"
+            label="Enable Ranks"
+            valuePropName="checked"
+          >
+            <Switch />
+          </Form.Item>
+
+          <Form.Item dependencies={["enableRanks"]} noStyle>
+            {({ getFieldValue }) =>
+              getFieldValue("enableRanks") && (
+                <>
+                  <Divider orientation="left">Ranks</Divider>
+                  <Form.List name="ranks">
+                    {(fields, { add, remove }) => (
+                      <>
+                        {fields.map(({ key, name, ...restField }) => (
+                          <Row key={key} gutter={16} align="middle">
+                            <Col span={10}>
+                              <Form.Item
+                                {...restField}
+                                name={[name, "name"]}
+                                label={key === 0 ? "Rank Name" : ""}
+                                rules={[{ required: true, message: "Rank name is required" }]}
+                              >
+                                <Input placeholder="e.g., Silver, Gold, Platinum" />
+                              </Form.Item>
+                            </Col>
+                            <Col span={10}>
+                              <Form.Item
+                                {...restField}
+                                name={[name, "additionalCost"]}
+                                label={key === 0 ? "Additional Cost ($)" : ""}
+                                rules={[{ required: true, message: "Additional cost is required" }]}
+                              >
+                                <InputNumber
+                                  min={0}
+                                  step={0.01}
+                                  style={{ width: "100%" }}
+                                  placeholder="0.00"
+                                />
+                              </Form.Item>
+                            </Col>
+                            <Col span={4}>
+                              {key === 0 ? (
+                                <div style={{ height: "32px" }} />
+                              ) : null}
+                              <Button
+                                type="text"
+                                danger
+                                onClick={() => remove(name)}
+                                style={{ marginTop: key === 0 ? "24px" : "0" }}
+                              >
+                                Remove
+                              </Button>
+                            </Col>
+                          </Row>
+                        ))}
+                        <Form.Item>
+                          <Button
+                            type="dashed"
+                            onClick={() => add()}
+                            style={{ width: "100%" }}
+                            icon={<PlusOutlined />}
+                          >
+                            Add Rank
+                          </Button>
+                        </Form.Item>
+                      </>
+                    )}
+                  </Form.List>
+                </>
+              )
+            }
+          </Form.Item>
           <Form.Item
             name="dynamicPricing"
             label="Enable Dynamic Pricing"
@@ -427,24 +583,12 @@ export default function SubpackagesTable() {
           >
             <Switch />
           </Form.Item>
-          <Form.Item
-            name="requiredProviders"
-            label="Required Providers"
-            rules={[
-              {
-                required: true,
-                message: "No of Providers is required",
-              },
-            ]}
-          >
-            <InputNumber min={0} style={{ width: "100%" }} />
-          </Form.Item>
           <Form.Item dependencies={["dynamicPricing"]} noStyle>
             {({ getFieldValue }) =>
               getFieldValue("dynamicPricing") && (
                 <>
                   <Row gutter={16}>
-                    <Col span={8}>
+                    {/* <Col span={8}>
                       <Form.Item name="basePricePerELO" label="Price per ELO">
                         <InputNumber
                           min={0}
@@ -453,7 +597,7 @@ export default function SubpackagesTable() {
                           prefix="$"
                         />
                       </Form.Item>
-                    </Col>
+                    </Col> */}
                     <Col span={8}>
                       <Form.Item name="minELO" label="Min ELO">
                         <InputNumber min={0} style={{ width: "100%" }} />

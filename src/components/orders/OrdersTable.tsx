@@ -130,6 +130,14 @@ export default function OrdersTable() {
       },
     },
     {
+      title: "No. of Games",
+      key: "gamesCount",
+      width: 120,
+      render: (_, record: OrderListDto) => {
+        return <span>{(record as any).gamesCount || "-"}</span>;
+      },
+    },
+    {
       title: "Service",
       key: "service",
       width: 250,

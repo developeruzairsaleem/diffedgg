@@ -232,7 +232,7 @@ const GamesComponent = () => {
           </div>
           {index < steps.length - 1 && (
             <div
-              className={`w-20 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.number ? "bg-pink-500" : "bg-gray-600"
+              className={`w-8 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.number ? "bg-pink-500" : "bg-gray-600"
                 }`}
             />
           )}
@@ -242,7 +242,7 @@ const GamesComponent = () => {
   );
 
   return (
-    <div className="min-h-screen p-6 pt-0">
+    <div className="min-h-screen p-3 sm:p-4 md:p-6 pt-0">
       <div className="max-w-7xl h-full mx-auto">
         {/* Stepper */}
         <StepperComponent />
@@ -250,27 +250,27 @@ const GamesComponent = () => {
         {/* Step 1: Game Selection */}
         {currentStep === 1 && (
           <div className="mb-2">
-            <h2 className="text-4xl font-semibold text-white mb-4 text-center">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white mb-3 sm:mb-4 text-center">
               Select Your Favourite Game
             </h2>
-            <p className="text-gray-300 text-center mb-12 text-lg">
+            <p className="text-gray-300 text-center mb-8 sm:mb-10 md:mb-12 text-base sm:text-lg">
               Choose the game you want to boost your performance in
             </p>
-            <div className="grid grid-cols-1  md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
               {games.map((game, index) => (
                 <div
                   key={index}
                   onClick={() => setSelectedGame(game)}
-                  className="relative group cursor-pointer rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+                  className="relative group cursor-pointer rounded-lg sm:rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
                 >
                   <div
-                    className="rounded-xl p-1 h-full"
+                    className="rounded-lg sm:rounded-xl p-1 h-full"
                     style={{
                       background:
                         "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
                     }}
                   >
-                    <div className="bg-[#5E2047] h-full rounded-xl overflow-hidden">
+                    <div className="bg-[#5E2047] h-full rounded-lg sm:rounded-xl overflow-hidden">
                       <div className="aspect-[5/4] relative">
                         <SafeImage
                           src={game.image}
@@ -279,11 +279,11 @@ const GamesComponent = () => {
                           className="w-full h-full object-cover transition-transform duration-300 "
                         />
                       </div>
-                      <div className="p-6">
-                        <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">
+                      <div className="p-4 sm:p-5 md:p-6">
+                        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">
                           {game.name}
                         </h3>
-                        <p className="text-gray-200 text-sm">
+                        <p className="text-gray-200 text-xs sm:text-sm">
                           {game?.services?.length || 0} services available
                         </p>
                       </div>
@@ -298,11 +298,11 @@ const GamesComponent = () => {
         {/* Step 2: Service Selection */}
         {currentStep === 2 && selectedGame && (
           <div className="mb-2">
-            <div className="text-center mb-8">
-              <h2 className="text-4xl font-semibold text-white mb-4">
+            <div className="text-center mb-6 sm:mb-8">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white mb-3 sm:mb-4">
                 Choose Your Service
               </h2>
-              <p className="text-gray-300 text-lg mb-6">
+              <p className="text-gray-300 text-base sm:text-lg mb-4 sm:mb-6">
                 Select the type of service for{" "}
                 <span className="text-pink-400 font-semibold">
                   {selectedGame.name}
@@ -313,12 +313,12 @@ const GamesComponent = () => {
                   setSelectedGame(null);
                   setCurrentStep(1);
                 }}
-                className="text-pink-400 hover:text-pink-300 transition-colors text-sm"
+                className="text-pink-400 hover:text-pink-300 transition-colors text-xs sm:text-sm"
               >
                 ← Back to Games
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
               {selectedGame?.services?.map((service: any, index: any) => (
                 <div
                   key={index}
@@ -326,34 +326,34 @@ const GamesComponent = () => {
                   className="cursor-pointer group transition-all duration-300 transform hover:scale-105"
                 >
                   <div
-                    className="rounded-xl h-full p-1"
+                    className="rounded-lg sm:rounded-xl h-full p-1"
                     style={{
                       background:
                         "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
                     }}
                   >
-                    <div className="bg-[#5E2047] rounded-xl p-6 h-full">
-                      <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-r p-3 from-pink-500 to-cyan-400 rounded-lg flex items-center justify-center mr-2">
-                          <span className="text-white font-bold text-lg">
+                    <div className="bg-[#5E2047] rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 h-full">
+                      <div className="flex items-center mb-3 sm:mb-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r p-2 sm:p-3 from-pink-500 to-cyan-400 rounded-lg flex items-center justify-center mr-2">
+                          <span className="text-white font-bold text-base sm:text-lg">
                             {index + 1}
                           </span>
                         </div>
                         <h3
-                          className={`${orbitron.className} text-xl font-bold text-white group-hover:text-pink-300 transition-colors`}
+                          className={`${orbitron.className} text-md sm:text-xl font-bold text-white group-hover:text-pink-300 transition-colors`}
                         >
                           {service.name}
                         </h3>
                       </div>
-                      <p className="text-gray-300 leading-relaxed mb-4">
+                      <p className="text-gray-300 leading-relaxed mb-3 sm:mb-4 text-sm sm:text-base">
                         {service.description}
                       </p>
                       <div className="flex items-center justify-between mt-auto">
-                        <span className="text-sm text-pink-400 font-medium">
+                        <span className="text-xs sm:text-sm text-pink-400 font-medium">
                           {service?.subpackages?.length || 0} packages
                         </span>
                         <svg
-                          className="w-5 h-5 text-pink-400 group-hover:translate-x-1 transition-transform"
+                          className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400 group-hover:translate-x-1 transition-transform"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -384,11 +384,11 @@ const GamesComponent = () => {
         {/* Step 3: Package Selection */}
         {currentStep === 3 && selectedService && (
           <div className="mb-2">
-            <div className="text-center mb-8">
-              <h2 className="text-4xl font-semibold text-white mb-4">
+            <div className="text-center mb-6 sm:mb-8">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white mb-3 sm:mb-4">
                 Choose Your Package
               </h2>
-              <p className="text-gray-300 text-lg mb-6">
+              <p className="text-gray-300 text-base sm:text-lg mb-4 sm:mb-6">
                 Select a package from{" "}
                 <span className="text-pink-400 font-semibold">
                   {selectedService.name}
@@ -400,12 +400,12 @@ const GamesComponent = () => {
                   setSelectedService(null);
                   setCurrentStep(2);
                 }}
-                className="text-pink-400 hover:text-pink-300 transition-colors text-sm"
+                className="text-pink-400 hover:text-pink-300 transition-colors text-xs sm:text-sm"
               >
                 ← Back to Services
               </button>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 max-w-7xl mx-auto">
               {selectedService?.subpackages?.map(
                 (item: any, itemIndex: any) => (
                   <div
@@ -413,31 +413,31 @@ const GamesComponent = () => {
                     className="group transition-all duration-300 transform hover:scale-105"
                   >
                     <div
-                      className="rounded-xl h-full p-1"
+                      className="rounded-lg sm:rounded-xl h-full p-1"
                       style={{
                         background:
                           "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
                       }}
                     >
-                      <div className="bg-[#5E2047] rounded-xl p-6 h-full flex flex-col">
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
+                      <div className="bg-[#5E2047] rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 h-full flex flex-col">
+                        <div className="flex items-start justify-between mb-3 sm:mb-4">
+                          <div className="flex-1 min-w-0">
                             <h3
-                              className={`${orbitron.className} text-xl font-bold text-white mb-2 group-hover:text-pink-300 transition-colors`}
+                              className={`${orbitron.className} text-lg sm:text-xl font-bold text-white mb-2 group-hover:text-pink-300 transition-colors`}
                             >
                               {item.name}
                             </h3>
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 mb-2 sm:mb-3">
+                              <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
                                 {item?.duration || "Flexible"}
                               </span>
                               {item?.dynamicPricing ? (
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
                                   <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mr-1"></span>
                                   ELO-Based
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30">
+                                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30">
                                   <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-1"></span>
                                   Fixed
                                 </span>
@@ -576,37 +576,37 @@ const GamesComponent = () => {
 
 
                           </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-green-400">
+                          <div className="text-right ml-2">
+                            <div className="text-xl sm:text-2xl font-bold text-green-400">
                               ${item?.price}
                             </div>
                           </div>
                         </div>
 
-                        <p className="text-gray-300 leading-relaxed mb-6 flex-grow">
+                        <p className="text-gray-300 leading-relaxed mb-4 sm:mb-6 flex-grow text-sm sm:text-base">
                           {item.description}
                         </p>
 
-                        <div className="flex gap-3 mt-auto">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-auto">
                           <button
-                            className={`flex-1 px-4 py-2 flex cursor-pointer items-center justify-center ${lato.className} relative cursor-pointer group
-                            bg-gradient-to-r from-pink-500 gap-3 via-purple-500 to-cyan-400
+                            className={`flex-1 px-3 sm:px-4 py-2 flex cursor-pointer items-center justify-center ${lato.className} relative cursor-pointer group
+                            bg-gradient-to-r from-pink-500 gap-2 sm:gap-3 via-purple-500 to-cyan-400
                             transition-all
                             hover:scale-105
                             rounded-lg
-                            text-white font-semibold
+                            text-white font-semibold text-sm sm:text-base
                           `}
                             onClick={() => handleQuickPay(item)}
                           >
                             QuickPay
                           </button>
                           <button
-                            className={`flex-1 px-4 py-2 flex cursor-pointer items-center justify-center ${lato.className} relative cursor-pointer group
+                            className={`flex-1 px-3 sm:px-4 py-2 flex cursor-pointer items-center justify-center ${lato.className} relative cursor-pointer group
                             border-2 border-pink-500 text-pink-400
                             transition-all
                             hover:scale-105 hover:bg-pink-500 hover:text-white
                             rounded-lg
-                            font-semibold
+                            font-semibold text-sm sm:text-base
                           `}
                             onClick={() => handleCheckout(item)}
                           >
@@ -618,9 +618,9 @@ const GamesComponent = () => {
                   </div>
                 )
               ) || (
-                  <div className="col-span-full text-center py-12">
-                    <div className="text-6xl mb-4">📦</div>
-                    <p className="text-gray-400 text-lg">
+                  <div className="col-span-full text-center py-8 sm:py-12">
+                    <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📦</div>
+                    <p className="text-gray-400 text-base sm:text-lg">
                       No packages available for this service yet.
                     </p>
                   </div>
@@ -632,7 +632,7 @@ const GamesComponent = () => {
 
       {/* Custom QuickPay Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -640,24 +640,24 @@ const GamesComponent = () => {
           />
 
           {/* Modal Content */}
-          <div className="relative w-full max-w-md mx-4">
+          <div className="relative w-full max-w-md">
             <div
-              className="rounded-2xl p-1"
+              className="rounded-xl sm:rounded-2xl p-1"
               style={{
                 background:
                   "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
               }}
             >
-              <div className="bg-[#5E2047] rounded-2xl p-6">
+              <div className="bg-[#5E2047] rounded-xl sm:rounded-2xl p-4 sm:p-6">
                 {/* Header */}
-                <div className="text-center mb-6">
+                <div className="text-center mb-4 sm:mb-6">
                   <h3
-                    className={`${orbitron.className} text-2xl font-bold text-white mb-2`}
+                    className={`${orbitron.className} text-xl sm:text-2xl font-bold text-white mb-2`}
                   >
                     Confirm Quick Pay
                   </h3>
                   <div
-                    className="w-16 h-1 mx-auto rounded-full"
+                    className="w-12 sm:w-16 h-1 mx-auto rounded-full"
                     style={{
                       background:
                         "linear-gradient(90deg, #00C3FF 0%, #FFFF1C 100%)",
@@ -667,36 +667,36 @@ const GamesComponent = () => {
 
                 {/* Package Details */}
                 {selectedSubpackage && (
-                  <div className="space-y-4 mb-6">
-                    <div className="bg-gray-900/30 rounded-lg p-4 border border-gray-600/50">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-gray-300 text-sm">Package</span>
-                        <span className="text-white font-semibold">
+                  <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                    <div className="bg-gray-900/30 rounded-lg p-3 sm:p-4 border border-gray-600/50">
+                      <div className="flex items-center justify-between mb-2 sm:mb-3">
+                        <span className="text-gray-300 text-xs sm:text-sm">Package</span>
+                        <span className="text-white font-semibold text-sm sm:text-base">
                           {selectedSubpackage.name}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-gray-300 text-sm">
+                      <div className="flex items-center justify-between mb-2 sm:mb-3">
+                        <span className="text-gray-300 text-xs sm:text-sm">
                           Base Price
                         </span>
-                        <span className="text-green-400 font-bold text-lg">
+                        <span className="text-green-400 font-bold text-base sm:text-lg">
                           ${selectedSubpackage.price}
                         </span>
                       </div>
 
                        {/* Selected Rank Details */}
                       {Array.isArray(selectedSubpackage.ranks) && selectedSubpackage.ranks.length > 0 && selectedRank && (
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-gray-300 text-sm">Selected Rank</span>
-                          <span className="text-pink-400 font-semibold">
+                        <div className="flex items-center justify-between mb-2 sm:mb-3">
+                          <span className="text-gray-300 text-xs sm:text-sm">Selected Rank</span>
+                          <span className="text-pink-400 font-semibold text-sm sm:text-base">
                             {selectedRank.name} <span className="text-cyan-400">(+${selectedRank.additionalCost})</span>
                           </span>
                         </div>
                       )}
                       {/* Always show number of games */}
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-gray-300 text-sm">No. of Games</span>
-                        <span className="text-pink-400 font-semibold">{numGamesMap[selectedSubpackage.id] || 1}</span>
+                      <div className="flex items-center justify-between mb-2 sm:mb-3">
+                        <span className="text-gray-300 text-xs sm:text-sm">No. of Games</span>
+                        <span className="text-pink-400 font-semibold text-sm sm:text-base">{numGamesMap[selectedSubpackage.id] || 1}</span>
                       </div>
                       {/* Always show number of teammates */}
                       <div className="flex items-center justify-between mb-3">
@@ -797,10 +797,10 @@ const GamesComponent = () => {
                       {/* Total Price */}
                       <div className="pt-3 border-t border-gray-600/50">
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-300 text-sm">
+                          <span className="text-gray-300 text-xs sm:text-sm">
                             Total Price
                           </span>
-                          <span className="text-green-400 font-bold text-xl">
+                          <span className="text-green-400 font-bold text-lg sm:text-xl">
                             ${calculateTotalPrice().toFixed(2)}
                           </span>
                         </div>
@@ -813,17 +813,17 @@ const GamesComponent = () => {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 px-4 py-3 rounded-lg border border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800/50 transition-all duration-200"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-600 text-gray-300 hover:text-white hover:bg-gray-800/50 transition-all duration-200 text-sm sm:text-base"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={confirmQuickPay}
                     disabled={isPaying}
-                    className="flex-1 px-4 py-3 rounded-lg font-semibold text-white transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-semibold text-white transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                     style={{
                       background:
                         "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",

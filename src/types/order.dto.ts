@@ -113,6 +113,7 @@ export interface OrderDetailDto {
   price: number;
   status: OrderStatus;
   notes?: string;
+  cancelReason?: string;
   rerollsLeft: number;
   approvedCount: number;
   requiredCount: number;
@@ -125,6 +126,7 @@ export interface OrderDetailDto {
   updatedAt: Date;
   assignments: OrderAssignmentDto[];
   chats: ChatDto[];
+  providerId?: string;
 }
 
 // API Request/Response DTOs
@@ -161,6 +163,7 @@ export interface CustomerOrderListResponse {
 export interface OrderUpdateRequest {
   status?: OrderStatus;
   notes?: string;
+  cancelReason?: string;
   rerollsLeft?: number;
   requiredCount?: number;
 }

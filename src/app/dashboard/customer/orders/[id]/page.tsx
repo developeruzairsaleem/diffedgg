@@ -7,6 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
   User,
@@ -27,6 +31,13 @@ import { useStore } from "@/store/useStore";
 import { Button, message, Modal } from "antd";
 import OverlayLoader from "@/components/ui/OverlayLoader";
 
+// Zod schema for cancellation form
+const cancellationSchema = z.object({
+  reason: z.string().min(1, "Cancellation reason is required").min(10, "Please provide a detailed reason (at least 10 characters)"),
+});
+
+type CancellationFormData = z.infer<typeof cancellationSchema>;
+
 // -------------------------------
 // order detail page for customer
 // ------------------------------------
@@ -44,6 +55,24 @@ export default function OrderDetailPage() {
   const [isCancelling, setIsCancelling] = useState(false);
 
   const [approvingId, setApprovingId] = useState<string | null>(null);
+
+  // Form management for cancellation reason
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    reset,
+    watch,
+  } = useForm<CancellationFormData>({
+    resolver: zodResolver(cancellationSchema),
+    mode: "onChange",
+    defaultValues: {
+      reason: "",
+    },
+  });
+
+  // Watch the reason field to enable/disable the confirm button
+  const reasonValue = watch("reason");
 
   // Add wallet refetch function
   const fetchWallet = async () => {
@@ -689,7 +718,10 @@ export default function OrderDetailPage() {
       {/* Cancel Modal */}
       <Modal
         open={cancelModalOpen}
-        onCancel={() => setCancelModalOpen(false)}
+        onCancel={() => {
+          setCancelModalOpen(false);
+          reset(); // Reset form when modal is closed
+        }}
         footer={null}
         centered
         styles={{ content: { background: "#5E2047" } }}
@@ -702,22 +734,45 @@ export default function OrderDetailPage() {
             Cancel this order?
           </h3>
           <p className="text-gray-300 mb-4">This action cannot be undone.</p>
+
+          {/* Cancellation Reason Textarea */}
+          <div className="mb-4 text-left">
+            <label className="block text-white text-sm font-medium mb-2">
+              Reason for cancellation *
+            </label>
+            <Textarea
+              {...register("reason")}
+              placeholder="Please provide a detailed reason for cancelling this order..."
+              className="w-full bg-transparent border-gray-600 text-white placeholder-gray-400 focus:border-1 focus:border-white/50 focus:ring-white"
+              rows={4}
+            />
+            {errors.reason && (
+              <p className="text-red-400 text-sm mt-1">{errors.reason.message}</p>
+            )}
+          </div>
           <div className="flex gap-3 justify-center">
             <Button
-              onClick={() => setCancelModalOpen(false)}
+              onClick={() => {
+                setCancelModalOpen(false);
+                reset(); // Reset form when keeping the order
+              }}
               className="px-5 py-2 border border-gray-600 bg-transparent text-white hover:bg-gray-800/40"
             >
               Keep Order
             </Button>
             <Button
               loading={isCancelling}
-              onClick={async () => {
+              disabled={!isValid || isCancelling}
+              onClick={handleSubmit(async (data) => {
                 try {
                   setIsCancelling(true);
                   const res = await fetch(`/api/orders/${orderId}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ status: "CANCELLED" }),
+                    body: JSON.stringify({
+                      status: "CANCELLED",
+                      cancelReason: data.reason
+                    }),
                   });
                   const json = await res.json();
                   if (!res.ok || !json.success) {
@@ -726,14 +781,19 @@ export default function OrderDetailPage() {
                     message.success("Order cancelled");
                     await fetchOrder();
                     setCancelModalOpen(false);
+                    reset(); // Reset form after successful cancellation
                   }
                 } catch (e) {
                   message.error("Something went wrong cancelling the order");
                 } finally {
                   setIsCancelling(false);
                 }
-              }}
-              className="px-5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700"
+              })}
+              className={`px-5 py-2 text-white transition-all ${
+                isValid && !isCancelling
+                  ? "bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                  : "bg-gray-600 cursor-not-allowed"
+              }`}
             >
               Confirm Cancel
             </Button>
