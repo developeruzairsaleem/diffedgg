@@ -213,7 +213,7 @@ const Dashboard = ({ children }: { children: React.ReactNode }) => {
 
         {/* Main Content */}
         <main
-          className={` flex-1 transition-all duration-300 ease-in-out ml-0 ${
+          className={` flex-1 transition-all duration-300 ease-in-out ml-0 overflow-x-auto ${
             isSidebarOpen ? "md:ml-64" : "md:ml-20"
           }`}
         >

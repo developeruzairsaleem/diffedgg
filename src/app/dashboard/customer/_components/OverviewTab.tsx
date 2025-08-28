@@ -203,16 +203,17 @@ const WelcomeCard = ({ user, loading }: { user: any; loading: boolean }) => {
 };
 
 const DashboardSkeleton = () => (
-  <div className="min-h-screen p-4 md:p-6 animate-pulse">
+  <div className="min-h-screen p-3 sm:p-4 md:p-6 animate-pulse">
     <div className="max-w-7xl mx-auto">
       {/* Welcome Card Skeleton */}
       <div
-        className="rounded-xl p-1 mb-8"
+        className="rounded-lg sm:rounded-xl p-1 mb-6 sm:mb-8"
         style={{
           background:
             "linear-gradient(135deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
         }}
       >
+<
         <div className="bg-[#5E2047] rounded-xl p-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-2xl"></div>
           <div className="relative z-10">
@@ -237,6 +238,7 @@ const DashboardSkeleton = () => (
                 "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
             }}
           >
+
             <div className="bg-[#5E2047] rounded-xl p-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-xl"></div>
               <div className="relative z-10">
@@ -339,6 +341,7 @@ const DashboardSkeleton = () => (
                         </div>
                       ))}
                     </div>
+
                   </div>
                 </div>
               </div>

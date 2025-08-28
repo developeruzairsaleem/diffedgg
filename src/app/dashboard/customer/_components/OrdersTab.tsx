@@ -56,23 +56,25 @@ const getStatusColor = (status: string) => {
 // Enhanced responsive skeleton component
 const ModernOrdersSkeleton = () => {
   return (
-    <div className="min-h-screen p-4 md:p-6 animate-pulse">
+    <div className="min-h-screen p-3 sm:p-4 md:p-6 animate-pulse">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl"></div>
             <div className="h-8 w-32 bg-gray-700 rounded-lg"></div>
+
           </div>
-          <div className="h-5 w-80 bg-gray-700 rounded-md"></div>
+          <div className="h-4 sm:h-5 w-64 sm:w-72 md:w-80 bg-gray-700 rounded-md"></div>
         </div>
+
 
         {/* Enhanced Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
-              className="rounded-xl p-1"
+              className="rounded-lg sm:rounded-xl p-1"
               style={{
                 background:
                   "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
@@ -98,14 +100,15 @@ const ModernOrdersSkeleton = () => {
 
         {/* Orders Section */}
         <div
-          className="rounded-xl p-1"
+          className="rounded-lg sm:rounded-xl p-1"
           style={{
             background:
               "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
           }}
         >
-          <div className="bg-[#5E2047] rounded-xl">
+          <div className="bg-[#5E2047] rounded-lg sm:rounded-xl">
             {/* Header */}
+
             <div className="p-6 border-b border-gray-600/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -290,6 +293,7 @@ const ModernOrdersSkeleton = () => {
                     <div className="h-4 w-16 bg-gray-600 rounded-md"></div>
                   </div>
                   <div className="h-10 w-24 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl"></div>
+
                 </div>
               </div>
             </div>
@@ -341,24 +345,25 @@ const OrdersTab = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-3 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <ShoppingCart className="w-5 h-5 text-white" />
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center">
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <h1
-              className={`${orbitron.className} text-3xl md:text-4xl font-bold text-white`}
+              className={`${orbitron.className} text-2xl sm:text-3xl md:text-4xl font-bold text-white`}
             >
               My Orders
             </h1>
           </div>
-          <p className="text-gray-300 text-lg">
+          <p className="text-gray-300 text-base sm:text-lg">
             Track and manage all your gaming service orders in one place
           </p>
         </div>
+
 
         {/* Enhanced Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
@@ -398,12 +403,15 @@ const OrdersTab = () => {
           ].map((stat, index) => (
             <div
               key={index}
+
               className="rounded-xl p-1 transition-all duration-300 hover:scale-105 cursor-pointer group"
+
               style={{
                 background:
                   "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
               }}
             >
+
               <div className="bg-[#5E2047] rounded-xl p-6 h-full relative overflow-hidden">
                 {/* Background Pattern */}
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
@@ -446,26 +454,26 @@ const OrdersTab = () => {
 
         {/* Orders Section */}
         <div
-          className="rounded-xl p-1"
+          className="rounded-lg sm:rounded-xl p-1"
           style={{
             background:
               "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
           }}
         >
-          <div className="bg-[#5E2047] rounded-xl">
+          <div className="bg-[#5E2047] rounded-lg sm:rounded-xl">
             {/* Header */}
-            <div className="p-6 border-b border-gray-600/30">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-6 h-6 text-pink-400" />
+            <div className="p-4 sm:p-5 md:p-6 border-b border-gray-600/30">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-pink-400" />
                   <h2
-                    className={`${orbitron.className} text-2xl font-bold text-white`}
+                    className={`${orbitron.className} text-xl sm:text-2xl font-bold text-white`}
                   >
                     Recent Orders
                   </h2>
                 </div>
                 {ordersData?.total && (
-                  <div className="text-sm text-gray-300">
+                  <div className="text-xs sm:text-sm text-gray-300">
                     Showing {Math.min(page * limit, ordersData.total)} of{" "}
                     {ordersData.total} orders
                   </div>
@@ -474,24 +482,24 @@ const OrdersTab = () => {
             </div>
 
             {!ordersData?.orders?.length ? (
-              <div className="text-center py-20 px-6">
-                <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Inbox className="w-10 h-10 text-white" />
+              <div className="text-center py-12 sm:py-16 md:py-20 px-4 sm:px-6">
+                <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <Inbox className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-white" />
                 </div>
                 <h3
-                  className={`${orbitron.className} text-2xl font-bold text-white mb-3`}
+                  className={`${orbitron.className} text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3`}
                 >
                   No Orders Yet
                 </h3>
-                <p className="text-gray-300 mb-8 max-w-md mx-auto">
+                <p className="text-gray-300 mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base">
                   Ready to boost your gaming performance? Browse our services
                   and place your first order!
                 </p>
                 <Link
                   href="/dashboard/customer"
-                  className="inline-flex items-center gap-2 font-semibold text-white bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:opacity-90 transition-opacity duration-200 py-3 px-8 rounded-lg text-base"
+                  className="inline-flex items-center gap-2 font-semibold text-white bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:opacity-90 transition-opacity duration-200 py-2.5 sm:py-3 px-6 sm:px-8 rounded-lg text-sm sm:text-base"
                 >
-                  <ShoppingCart className="w-5 h-5" />
+                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                   Browse Services
                 </Link>
               </div>
@@ -769,10 +777,11 @@ const OrdersTab = () => {
                 </div>
 
                 {/* Mobile Card View */}
-                <div className="lg:hidden p-4 space-y-4">
+                <div className="lg:hidden p-3 sm:p-4 space-y-3 sm:space-y-4">
                   {ordersData.orders.map((order: CustomerOrderListDto) => (
                     <div
                       key={order.id}
+
                       className="bg-gradient-to-br from-gray-800/30 to-gray-900/20 rounded-xl p-5 border border-gray-600/20 hover:border-gray-500/30 transition-all duration-200 backdrop-blur-sm shadow-lg"
                     >
                       <div className="flex items-center gap-4 mb-5">
@@ -798,16 +807,18 @@ const OrdersTab = () => {
                             {order.subpackage?.service?.game?.name}
                           </h3>
                           <p className="text-gray-300 text-sm">
+
                             {order.subpackage?.service?.name}
                           </p>
                         </div>
                         <span
+
                           className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 border ${getStatusColor(
                             order.status
                           )}`}
                         >
                           {getStatusIcon(order.status)}
-                          <span className="capitalize">
+                          <span className="capitalize hidden sm:inline">
                             {order.status.replace("_", " ").toLowerCase()}
                           </span>
                         </span>
@@ -933,10 +944,12 @@ const OrdersTab = () => {
                         onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                         disabled={page === 1}
                         className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:from-pink-600 hover:to-purple-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:hover:scale-100 hover:scale-105"
+
                       >
                         <ChevronLeft className="w-4 h-4" />
                         <span className="hidden sm:inline">Previous</span>
                       </button>
+
 
                       <div className="bg-gray-800/40 rounded-xl px-4 py-2.5 border border-gray-600/20">
                         <span className="text-white font-bold">{page}</span>
@@ -945,7 +958,6 @@ const OrdersTab = () => {
                           {Math.ceil((ordersData?.total || 0) / limit) || 1}
                         </span>
                       </div>
-
                       <button
                         onClick={() => {
                           if (

@@ -162,6 +162,7 @@ model Order {
   customerId      String
   customer        User              @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Cascade)
   subpackageId    String
+  cancelReason    String?
   discordTag      String
   discordUsername String
   subpackage      Subpackage        @relation(fields: [subpackageId], references: [id], onDelete: Cascade)

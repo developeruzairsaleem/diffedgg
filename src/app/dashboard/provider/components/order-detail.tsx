@@ -14,6 +14,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   User,
   Gamepad2,
   Info,
@@ -107,13 +115,47 @@ const OrderDetailsCard = ({ order }: { order: any }) => (
 
 const ActionsCard = ({
   assignmentId,
+  orderId,
   isCompleted,
   refetchAssignment,
 }: {
   assignmentId: string;
+  orderId: string;
   isCompleted: boolean;
   refetchAssignment: () => void;
 }) => {
+  const [showHandoverModal, setShowHandoverModal] = useState(false);
+  const [isHandingOver, setIsHandingOver] = useState(false);
+
+  const handleConfirmHandover = async () => {
+    setIsHandingOver(true);
+    try {
+      const response = await fetch(`/api/orders/${orderId}/assignments/${assignmentId}/handover`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to handover assignment');
+      }
+
+      toast.success('Assignment handed over successfully');
+      setShowHandoverModal(false);
+      // Redirect to the provider dashboard/orders page after successful handover
+      window.location.href = "/dashboard/provider";
+    } catch (error: any) {
+      console.error('Error handing over assignment:', error);
+      toast.error('Failed to handover assignment', {
+        description: error.message || 'Something went wrong.',
+      });
+    } finally {
+      setIsHandingOver(false);
+    }
+  };
   if (isCompleted) {
     return (
       <Card
@@ -130,6 +172,8 @@ const ActionsCard = ({
           <p className="text-green-400 text-center">
             This order is marked as complete and is under review.
           </p>
+
+          
         </CardContent>
       </Card>
     );
@@ -168,6 +212,41 @@ const ActionsCard = ({
             }}
           />
         </div>
+        <Button
+          onClick={() => setShowHandoverModal(true)}
+          variant="destructive"
+          className="w-full border border-white/50 rounded-lg mt-8"
+        >
+          HAND OVER
+        </Button>
+
+        {/* Handover Confirmation Modal */}
+        <Dialog open={showHandoverModal} onOpenChange={setShowHandoverModal}>
+          <DialogContent className="sm:max-w-[425px] bg-black/30 backdrop-blur-sm border-white/10">
+            <DialogHeader>
+              <DialogTitle>Confirm Handover</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to hand over this assignment? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowHandoverModal(false)}
+                disabled={isHandingOver}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmHandover}
+                disabled={isHandingOver}
+              >
+                {isHandingOver ? "Handing over..." : "Confirm Handover"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
@@ -267,6 +346,7 @@ export default function ProviderSetupPage() {
             <ActionsCard
               isCompleted={isCompleted}
               assignmentId={assignmentId}
+              orderId={assignment.order.id}
               refetchAssignment={fetchAssignment}
             />
           </div>
