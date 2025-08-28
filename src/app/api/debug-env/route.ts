@@ -14,7 +14,10 @@ export async function GET(req: NextRequest) {
       PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET
         ? "SET"
         : "NOT SET",
+      PAYPAL_USE_LIVE: process.env.PAYPAL_USE_LIVE || "NOT SET",
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "NOT SET",
+      PAYPAL_ENVIRONMENT:
+        process.env.PAYPAL_USE_LIVE === "true" ? "LIVE" : "SANDBOX",
     };
 
     console.log("Environment variables check:", envCheck);
