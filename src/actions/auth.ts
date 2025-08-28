@@ -65,6 +65,7 @@ export async function signup(state: any, formData: FormData) {
         email,
         password: hashedPassword,
         role,
+        status: role === "provider" ? "inactive" : "active",
       },
     });
     // something went wrong while creating a user

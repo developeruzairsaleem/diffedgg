@@ -71,8 +71,9 @@ export async function POST(request: NextRequest) {
       discordTag,
       notes,
       finalPrice,
-      currentELO,
-      targetELO,
+      numberOfGames,
+      numberOfTeammates,
+      rankName,
     } = await request.json();
 
     if (
@@ -83,7 +84,9 @@ export async function POST(request: NextRequest) {
       !(
         (paymentIntentId && paymentMethod === "stripe") ||
         (paypalOrderId && paypalCaptureId && paymentMethod === "paypal")
-      )
+      ) ||
+      !numberOfGames ||
+      !numberOfTeammates
     ) {
       return NextResponse.json(
         {
@@ -156,9 +159,20 @@ export async function POST(request: NextRequest) {
         customerId: session?.userId as string,
         subpackageId: subpackageId,
         price: finalPrice,
-        currentELO,
-        targetELO: targetELO,
-        requiredCount: subpackage.requiredProviders,
+        gamesCount: numberOfGames,
+        packageType: subpackage.type,
+        requiredCount:
+          subpackage.type === "pergame"
+            ? subpackage.requiredProviders
+            : subpackage.type === "perteammate"
+            ? numberOfTeammates
+            : 0,
+        rank:
+          subpackage.ranks &&
+          (subpackage.ranks as any[]).find(
+            (rank: any) => rank.name === rankName
+          ),
+
         discordTag: discordTag,
         discordUsername: discordUsername,
         notes: notes || null,

@@ -11,18 +11,13 @@ export async function GET(req: NextRequest) {
     const packageId: string = searchParams?.get("subpackageId") || "";
     const customerEmail: string = searchParams?.get("email") || "";
     const rankName: string = searchParams?.get("rankName") || "";
-    const numberOfGamesParam = searchParams?.get("numberOfGames");
-    const numberOfTeammatesParam = searchParams?.get("numberOfTeammates");
-    const numberOfGames: number = Math.max(
-      1,
-      Number.isNaN(Number(numberOfGamesParam)) ? 1 : Number(numberOfGamesParam)
+    const numberOfGames: number = Number(searchParams?.get("numberOfGames"));
+    const numberOfTeammates: number = Number(
+      searchParams?.get("numberOfTeammates")
     );
-    const numberOfTeammates: number = Math.max(
-      1,
-      Number.isNaN(Number(numberOfTeammatesParam)) ? 1 : Number(numberOfTeammatesParam));
 
+    if (!packageId || !customerEmail || !numberOfGames || !numberOfTeammates) {
 
-       if (!packageId || !customerEmail) {
       return NextResponse.json(
         { error: "DATA NOT PROVIDED for query params", success: false },
         { status: 400 }
@@ -65,25 +60,24 @@ export async function GET(req: NextRequest) {
         { status: 400 }
       );
     }
+    let totalPriceInCents = subpackage.price! * 100;
+    // calculate price in cents
 
-
-
-    // calculate price in cents using new pricing rules
-    const basePrice = subpackage.price || 0;
-    let additionalCostFromRank = 0;
-    try {
-      const ranksArray: Array<{ name: string; additionalCost: number }> =
-        Array.isArray((subpackage as any).ranks) ? (subpackage as any).ranks : [];
-      if (rankName) {
-        const matchedRank = ranksArray.find((r) => r?.name === rankName);
-        additionalCostFromRank = matchedRank?.additionalCost || 0;
-      }
-    } catch (_) {
-      additionalCostFromRank = 0;
+    if (rankName) {
+      totalPriceInCents +=
+        (subpackage.ranks as any[])?.find((rank: any) => rank.name === rankName)
+          ?.additionalCost * 100 || 0;
     }
-    const perUnitPrice = basePrice + additionalCostFromRank;
-    const totalPrice = perUnitPrice * numberOfGames * numberOfTeammates;
-    const totalPriceInCents = totalPrice * 100;
+
+    if (numberOfGames) {
+      totalPriceInCents *= numberOfGames;
+    }
+    if (subpackage.type === "pergame") {
+      totalPriceInCents *= subpackage.requiredProviders;
+    } else if (subpackage.type === "perteammate") {
+      totalPriceInCents *= numberOfTeammates;
+
+    }
 
     // create a payment intent for the customer
     const paymentIntent = await stripe.paymentIntents.create({
