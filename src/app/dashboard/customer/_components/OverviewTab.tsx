@@ -213,82 +213,230 @@ const DashboardSkeleton = () => (
             "linear-gradient(135deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
         }}
       >
-        <div className="bg-[#5E2047] rounded-xl p-8">
-          <div className="h-8 w-64 bg-gray-600 rounded mb-3"></div>
-          <div className="h-5 w-96 bg-gray-600 rounded mb-6"></div>
-          <div className="flex gap-4">
-            <div className="h-12 w-32 bg-gray-600 rounded-lg"></div>
-            <div className="h-12 w-32 bg-gray-600 rounded-lg"></div>
+        <div className="bg-[#5E2047] rounded-xl p-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-2xl"></div>
+          <div className="relative z-10">
+            <div className="h-8 w-64 bg-gray-600 rounded mb-3"></div>
+            <div className="h-5 w-96 bg-gray-600 rounded mb-6"></div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="h-12 w-32 bg-gray-600 rounded-lg"></div>
+              <div className="h-12 w-32 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg"></div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Stats Grid Skeleton */}
+      {/* Enhanced Stats Grid Skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="rounded-xl p-1"
+            className="rounded-xl p-1 transition-all duration-300"
             style={{
               background:
                 "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
             }}
           >
-            <div className="bg-[#5E2047] rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gray-600 rounded-xl"></div>
-                <div className="w-6 h-6 bg-gray-600 rounded"></div>
+            <div className="bg-[#5E2047] rounded-xl p-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-xl"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 bg-gray-600 rounded-xl"></div>
+                  <div className="w-6 h-6 bg-gray-600 rounded"></div>
+                </div>
+                <div className="h-4 w-20 bg-gray-600 rounded mb-1"></div>
+                <div className="flex items-baseline justify-between">
+                  <div className="h-8 w-16 bg-gray-600 rounded"></div>
+                  <div className="h-5 w-12 bg-gray-600 rounded-full"></div>
+                </div>
               </div>
-              <div className="h-4 w-20 bg-gray-600 rounded mb-2"></div>
-              <div className="h-8 w-16 bg-gray-600 rounded"></div>
             </div>
           </div>
         ))}
       </div>
 
       {/* Recent Activity & Quick Actions Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Recent Orders Skeleton */}
-        <div
-          className="lg:col-span-2 rounded-xl p-1"
-          style={{
-            background:
-              "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
-          }}
-        >
-          <div className="bg-[#5E2047] rounded-xl p-6">
-            <div className="h-6 w-32 bg-gray-600 rounded mb-6"></div>
-            <div className="space-y-4">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="bg-gray-800/30 rounded-lg p-4">
+        <div className="lg:col-span-2 flex flex-col">
+          <div
+            className="rounded-xl p-1 flex flex-col flex-1"
+            style={{
+              background:
+                "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
+            }}
+          >
+            <div className="bg-[#5E2047] rounded-xl flex flex-col flex-1">
+              <div className="p-4 sm:p-6 border-b border-gray-600/30 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-600 rounded-lg"></div>
-                    <div className="flex-1">
-                      <div className="h-4 w-32 bg-gray-600 rounded mb-2"></div>
-                      <div className="h-3 w-24 bg-gray-600 rounded"></div>
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-600 rounded"></div>
+                    <div className="h-5 sm:h-6 w-32 bg-gray-600 rounded"></div>
+                  </div>
+                  <div className="h-4 w-16 bg-gray-600 rounded"></div>
+                </div>
+              </div>
+
+              {/* Desktop View Skeleton */}
+              <div className="hidden lg:block p-6">
+                <div className="overflow-hidden">
+                  <div className="bg-gray-900/30 rounded-xl border border-gray-600/20 overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-b border-gray-600/30">
+                      <div className="grid grid-cols-12 gap-4 px-6 py-4">
+                        <div className="col-span-3 h-4 bg-gray-600 rounded-md"></div>
+                        <div className="col-span-2 h-4 bg-gray-600 rounded-md"></div>
+                        <div className="col-span-2 h-4 bg-gray-600 rounded-md"></div>
+                        <div className="col-span-3 h-4 bg-gray-600 rounded-md"></div>
+                        <div className="col-span-2 h-4 bg-gray-600 rounded-md"></div>
+                      </div>
                     </div>
-                    <div className="h-6 w-20 bg-gray-600 rounded-full"></div>
+
+                    {/* Rows */}
+                    <div className="divide-y divide-gray-700/30">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <div
+                          key={index}
+                          className="grid grid-cols-12 gap-4 px-6 py-4 items-center"
+                        >
+                          {/* Game & Service */}
+                          <div className="col-span-3 flex items-center gap-3">
+                            <div className="relative">
+                              <div className="w-12 h-12 bg-gray-600 rounded-xl"></div>
+                              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"></div>
+                            </div>
+                            <div className="flex-1">
+                              <div className="h-4 w-24 bg-gray-600 rounded-md mb-2"></div>
+                              <div className="h-3 w-20 bg-gray-600 rounded-md"></div>
+                            </div>
+                          </div>
+
+                          {/* Package */}
+                          <div className="col-span-2">
+                            <div className="bg-gray-800/40 rounded-lg p-3 border border-gray-600/20">
+                              <div className="h-4 w-20 bg-gray-600 rounded-md mb-2"></div>
+                              <div className="h-3 w-16 bg-gray-600 rounded-md"></div>
+                            </div>
+                          </div>
+
+                          {/* Price & Provider */}
+                          <div className="col-span-2">
+                            <div className="bg-gray-800/40 rounded-lg p-3 border border-gray-600/20">
+                              <div className="h-5 w-16 bg-gray-600 rounded-md mb-2"></div>
+                              <div className="h-3 w-20 bg-gray-600 rounded-md"></div>
+                            </div>
+                          </div>
+
+                          {/* Status */}
+                          <div className="col-span-3 flex justify-center">
+                            <div className="w-32 h-8 bg-gray-600 rounded-xl"></div>
+                          </div>
+
+                          {/* Action */}
+                          <div className="col-span-2 flex justify-center">
+                            <div className="w-24 h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Tablet View Skeleton (md to lg) */}
+              <div className="hidden md:block lg:hidden p-6">
+                <div className="space-y-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="bg-gradient-to-r from-gray-800/20 to-gray-900/20 rounded-xl p-5 border border-gray-600/20 backdrop-blur-sm"
+                    >
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="relative">
+                          <div className="w-16 h-16 bg-gray-600 rounded-xl"></div>
+                          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"></div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="h-5 w-32 bg-gray-600 rounded-md mb-2"></div>
+                          <div className="h-4 w-40 bg-gray-600 rounded-md"></div>
+                        </div>
+                        <div className="text-right">
+                          <div className="h-6 w-20 bg-gray-600 rounded-md mb-1"></div>
+                          <div className="h-3 w-16 bg-gray-600 rounded-md"></div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="h-8 w-24 bg-gray-600 rounded-xl"></div>
+                        <div className="h-10 w-32 bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile View Skeleton */}
+              <div className="md:hidden p-4 space-y-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-800/30 rounded-lg p-4 border border-gray-600/30"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 bg-gray-600 rounded-lg"></div>
+                      <div className="flex-1">
+                        <div className="h-4 w-32 bg-gray-600 rounded mb-2"></div>
+                        <div className="h-3 w-24 bg-gray-600 rounded"></div>
+                      </div>
+                      <div className="h-6 w-20 bg-gray-600 rounded-full"></div>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="h-4 w-16 bg-gray-600 rounded mb-1"></div>
+                        <div className="h-3 w-20 bg-gray-600 rounded"></div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="h-5 w-12 bg-gray-600 rounded-full"></div>
+                        <div className="h-5 w-12 bg-gray-600 rounded-full"></div>
+                        <div className="h-9 w-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg"></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Quick Actions Skeleton */}
-        <div
-          className="rounded-xl p-1"
-          style={{
-            background:
-              "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
-          }}
-        >
-          <div className="bg-[#5E2047] rounded-xl h-full p-2">
-            <div className="h-6 w-32 bg-gray-600 rounded mb-6"></div>
-            <div className="space-y-3 h-full">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div key={index} className="h-16 bg-gray-600  rounded-lg"></div>
-              ))}
+        <div className="">
+          <div
+            className="rounded-xl p-1 h-full"
+            style={{
+              background:
+                "linear-gradient(90deg, #EE2C81 0%, #FE0FD0 33%, #58B9E3 66%, #F79FC5 100%)",
+            }}
+          >
+            <div className="bg-[#5E2047] rounded-xl h-full p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-5 h-5 bg-gray-600 rounded"></div>
+                <div className="h-6 w-32 bg-gray-600 rounded"></div>
+              </div>
+              <div className="space-y-3">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-4 p-8 bg-gray-800/30 rounded-lg border border-gray-600/30"
+                  >
+                    <div className="w-10 h-10 bg-gray-600 rounded-lg"></div>
+                    <div className="flex-1">
+                      <div className="h-4 w-24 bg-gray-600 rounded"></div>
+                    </div>
+                    <div className="w-4 h-4 bg-gray-600 rounded"></div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -362,7 +510,7 @@ const OverviewTab = () => {
       value: `$${stats.totalSpent.toFixed(2)}`,
       icon: DollarSign,
       color: "from-purple-500 to-pink-400",
-      trend: stats.totalSpent > 0 ? "Lifetime" : undefined,
+      trend: stats.totalSpent > 0 ? "" : undefined,
     },
   ];
 
@@ -469,141 +617,120 @@ const OverviewTab = () => {
                 ) : (
                   <>
                     {/* Desktop View */}
-                    <div className="hidden md:block p-6">
-                      <div className="overflow-x-auto">
-                        <div className="min-w-[1400px]">
+                    <div className="hidden lg:block p-6">
+                      <div className="overflow-hidden">
+                        {/* Modern Table Container */}
+                        <div className="bg-gray-900/30 rounded-xl border border-gray-600/20 overflow-hidden">
                           {/* Header */}
-                          <div className="grid grid-cols-[240px_260px_160px_160px_120px_140px_180px_160px_120px] text-gray-300 text-xs uppercase tracking-wide bg-gray-900/40 border border-gray-600/40 rounded-md">
-                            <div className="px-4 py-2">Game</div>
-                            <div className="px-4 py-2">Package</div>
-                            <div className="px-4 py-2 text-center">Price</div>
-                            <div className="px-4 py-2 text-center">Status</div>
-                            <div className="px-4 py-2 text-center">Games</div>
-                            <div className="px-4 py-2 text-center">
-                              Teammates
+                          <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-b border-gray-600/30">
+                            <div className="grid grid-cols-12 gap-4 px-6 py-4 text-gray-300 text-xs uppercase tracking-wider font-semibold">
+                              <div className="col-span-3">Game & Service</div>
+                              <div className="col-span-2">Package</div>
+                              <div className="col-span-2 text-center">
+                                Price & Provider
+                              </div>
+                              <div className="col-span-3 text-center">
+                                Status
+                              </div>
+                              <div className="col-span-2 text-center">
+                                Action
+                              </div>
                             </div>
-                            <div className="px-4 py-2">Rank</div>
-                            <div className="px-4 py-2 text-center">ELO</div>
-                            <div className="px-4 py-2 text-right">Action</div>
                           </div>
 
-                          {/* Rows */}
-                          <div className="mt-2 space-y-2">
+                          {/* Table Body */}
+                          <div className="divide-y divide-gray-700/30">
                             {ordersData.orders.map(
                               (order: CustomerOrderListDto) => (
                                 <div
                                   key={order.id}
-                                  className="grid grid-cols-[240px_260px_160px_160px_120px_140px_180px_160px_120px] items-center bg-gray-800/30 hover:bg-gray-800/40 border border-gray-600/30 rounded-md"
+                                  className="grid grid-cols-12 gap-4 px-6 py-4 items-center bg-gray-800/10 hover:bg-gray-800/30 transition-all duration-200 group"
                                 >
-                                  {/* Col 1: Game */}
-                                  <div className="px-4 py-3 flex items-center gap-3">
-                                    <SafeImage
-                                      src={
-                                        order?.subpackage?.service?.game
-                                          ?.image || "/logo/logo.png"
-                                      }
-                                      alt={
-                                        order?.subpackage?.service?.game?.name
-                                      }
-                                      placeholder="/images/placeholder.png"
-                                      className="w-12 h-12 rounded-lg object-cover"
-                                    />
-                                    <h4 className="font-semibold text-white truncate">
-                                      {order?.subpackage?.service?.game?.name}
-                                    </h4>
+                                  {/* Game & Service */}
+                                  <div className="col-span-3 flex items-center gap-3 min-w-0">
+                                    <div className="relative">
+                                      <SafeImage
+                                        src={
+                                          order?.subpackage?.service?.game
+                                            ?.image || "/logo/logo.png"
+                                        }
+                                        alt={
+                                          order?.subpackage?.service?.game?.name
+                                        }
+                                        placeholder="/images/placeholder.png"
+                                        className="w-12 h-12 rounded-xl object-cover ring-2 ring-gray-600/30 group-hover:ring-pink-500/30 transition-all duration-200"
+                                      />
+                                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
+                                        <Gamepad2 className="w-2.5 h-2.5 text-white" />
+                                      </div>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <h4 className="font-semibold text-white text-sm group-hover:text-pink-300 transition-colors truncate">
+                                        {order?.subpackage?.service?.game?.name}
+                                      </h4>
+                                      <p className="text-gray-400 text-xs truncate">
+                                        {order?.subpackage?.service?.name}
+                                      </p>
+                                    </div>
                                   </div>
 
-                                  {/* Col 2: Service • Package */}
-                                  <div className="px-4 py-3 border-l border-gray-700">
-                                    <p className="text-gray-300 text-sm truncate">
-                                      {order?.subpackage?.service?.name} •{" "}
-                                      {order?.subpackage?.name}
-                                    </p>
+                                  {/* Package */}
+                                  <div className="col-span-2 min-w-0">
+                                    <div className="bg-gray-800/40 rounded-lg p-3 border border-gray-600/20">
+                                      <p className="text-gray-200 text-sm font-medium truncate">
+                                        {order?.subpackage?.name}
+                                      </p>
+                                      <p className="text-gray-400 text-xs mt-1">
+                                        {order?.subpackage?.duration ||
+                                          "Standard"}
+                                      </p>
+                                    </div>
                                   </div>
 
-                                  {/* Col 3: Price + Provider */}
-                                  <div className="px-4 py-3 border-l border-gray-700 text-center">
-                                    <p className="text-white font-semibold">
-                                      ${order?.price.toFixed(2)}
-                                    </p>
-                                    <p className="text-gray-400 text-xs truncate">
-                                      {getProviderDisplay(order)}
-                                    </p>
+                                  {/* Price & Provider */}
+                                  <div className="col-span-2 text-center">
+                                    <div className="bg-gray-800/40 rounded-lg p-3 border border-gray-600/20">
+                                      <p className="text-white font-bold text-lg">
+                                        ${order?.price.toFixed(2)}
+                                      </p>
+                                      <p className="text-gray-400 text-xs truncate mt-1">
+                                        {getProviderDisplay(order)}
+                                      </p>
+                                    </div>
                                   </div>
 
-                                  {/* Col 4: Status */}
-                                  <div className="px-4 py-3 border-l border-gray-700 flex justify-center">
-                                    <span
-                                      className={`px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-2 border ${getStatusColor(
-                                        order.status
-                                      )}`}
-                                    >
-                                      {getStatusIcon(order.status)}
-                                      <span className="capitalize">
-                                        {order.status
-                                          .replace("_", " ")
-                                          .toLowerCase()}
+                                  {/* Status */}
+                                  <div className="col-span-3 flex justify-center">
+                                    <div className="w-full max-w-[160px]">
+                                      <span
+                                        className={`w-full px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-2 border backdrop-blur-sm ${getStatusColor(
+                                          order.status
+                                        )}`}
+                                      >
+                                        {getStatusIcon(order.status)}
+                                        <span className="capitalize">
+                                          {order.status
+                                            .replace("_", " ")
+                                            .toLowerCase()}
+                                        </span>
                                       </span>
-                                    </span>
+                                    </div>
                                   </div>
 
-                                  {/* Col 5: Games */}
-                                  <div className="px-4 py-3 border-l border-gray-700 text-center">
-                                    <span className="text-white text-sm">
-                                      {order?.gamesCount != null &&
-                                      order.gamesCount > 0
-                                        ? order.gamesCount
-                                        : "-"}
-                                    </span>
-                                  </div>
-
-                                  {/* Col 6: Teammates */}
-                                  <div className="px-4 py-3 border-l border-gray-700 text-center">
-                                    <span className="text-white text-sm">
-                                      {order?.requiredCount != null
-                                        ? order.requiredCount
-                                        : "-"}
-                                    </span>
-                                  </div>
-
-                                  {/* Col 7: Rank */}
-                                  <div className="px-4 py-3 border-l border-gray-700">
-                                    <span className="text-white text-sm truncate block">
-                                      {order?.rank?.name
-                                        ? `${order.rank.name}${
-                                            typeof order?.rank
-                                              ?.additionalCost === "number" &&
-                                            order.rank.additionalCost > 0
-                                              ? ` +$${order.rank.additionalCost}`
-                                              : ""
-                                          }`
-                                        : "-"}
-                                    </span>
-                                  </div>
-
-                                  {/* Col 8: ELO */}
-                                  <div className="px-4 py-3 border-l border-gray-700 text-center">
-                                    <span className="text-white text-sm">
-                                      {order?.subpackage?.dynamicPricing &&
-                                      order?.subpackage?.minELO != null &&
-                                      order?.subpackage?.maxELO != null
-                                        ? `${order.subpackage.minELO}-${order.subpackage.maxELO}`
-                                        : "-"}
-                                    </span>
-                                  </div>
-
-                                  {/* Col 9: Action */}
-                                  <div className="px-4 py-3 border-l border-gray-700 flex justify-end">
+                                  {/* Action */}
+                                  <div className="col-span-2 flex justify-center">
                                     <Link
                                       href={
                                         order.status === "PENDING"
                                           ? `/dashboard/customer/orders/${order.id}/pending`
                                           : `/dashboard/customer/orders/${order.id}`
                                       }
-                                      className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium flex items-center gap-2"
+                                      className="w-full max-w-[100px] px-4 py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-xl transition-all duration-200 text-sm font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 group-hover:shadow-pink-500/25"
                                     >
                                       <Eye className="w-4 h-4" />
-                                      View
+                                      <span className="hidden xl:inline">
+                                        View
+                                      </span>
                                     </Link>
                                   </div>
                                 </div>
@@ -611,6 +738,80 @@ const OverviewTab = () => {
                             )}
                           </div>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Tablet View (md to lg) */}
+                    <div className="hidden md:block lg:hidden p-6">
+                      <div className="space-y-4">
+                        {ordersData.orders.map(
+                          (order: CustomerOrderListDto) => (
+                            <div
+                              key={order.id}
+                              className="bg-gradient-to-r from-gray-800/20 to-gray-900/20 rounded-xl p-5 border border-gray-600/20 hover:border-gray-500/30 transition-all duration-200 backdrop-blur-sm"
+                            >
+                              <div className="flex items-center gap-4 mb-4">
+                                <div className="relative">
+                                  <SafeImage
+                                    src={
+                                      order?.subpackage?.service?.game?.image ||
+                                      "/logo/logo.png"
+                                    }
+                                    alt={order?.subpackage?.service?.game?.name}
+                                    placeholder="/images/placeholder.png"
+                                    className="w-16 h-16 rounded-xl object-cover ring-2 ring-gray-600/30"
+                                  />
+                                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
+                                    <Gamepad2 className="w-3 h-3 text-white" />
+                                  </div>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-bold text-white text-lg mb-1">
+                                    {order?.subpackage?.service?.game?.name}
+                                  </h4>
+                                  <p className="text-gray-300 text-sm">
+                                    {order?.subpackage?.service?.name} •{" "}
+                                    {order?.subpackage?.name}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-white font-bold text-xl">
+                                    ${order?.price.toFixed(2)}
+                                  </p>
+                                  <p className="text-gray-400 text-xs">
+                                    {getProviderDisplay(order)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between">
+                                <span
+                                  className={`px-4 py-2 rounded-xl text-sm font-bold inline-flex items-center gap-2 border ${getStatusColor(
+                                    order.status
+                                  )}`}
+                                >
+                                  {getStatusIcon(order.status)}
+                                  <span className="capitalize">
+                                    {order.status
+                                      .replace("_", " ")
+                                      .toLowerCase()}
+                                  </span>
+                                </span>
+                                <Link
+                                  href={
+                                    order.status === "PENDING"
+                                      ? `/dashboard/customer/orders/${order.id}/pending`
+                                      : `/dashboard/customer/orders/${order.id}`
+                                  }
+                                  className="px-6 py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-xl transition-all duration-200 font-medium flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  View Order
+                                </Link>
+                              </div>
+                            </div>
+                          )
+                        )}
                       </div>
                     </div>
 
