@@ -461,6 +461,17 @@ const CustomerPendingOrderPage = ({ orderId }: { orderId: string }) => {
     }
   }, []);
 
+  // Auto-refresh every 5 seconds
+  useEffect(() => {
+    if (!orderId) return;
+
+    const interval = setInterval(() => {
+      fetchOrder(); // Don't show refresh loader for auto-refresh
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [orderId, fetchOrder]);
+
   const handleRefresh = () => {
     fetchOrder(true);
   };
