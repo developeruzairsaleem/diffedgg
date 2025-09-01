@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Flame,
   Users,
@@ -176,7 +176,7 @@ const OrderCard = ({
                 </p>
                 <p className="font-semibold text-orange-300 flex items-center gap-1">
                   <Flame className="w-4 h-4" />
-                  {order.currentELO} 																										 									 	 	 		 		 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	 	 	 	 	 	 				 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 				 	 	 	 	 	 	 	 	 	 	 	 	 	 	 			 	 	 	 	 	 							 	 	 	 	 	 	 	 	 	 	 	 	 	 		 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 		 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 		 	 	 					 	 	 	 	 	 	 	 	 	 	 	 	 	 	 			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 		 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 		 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 → {order.targetELO}
+                  {order.currentELO} → {order.targetELO}
                 </p>
               </div>
             )}
@@ -218,12 +218,21 @@ const OrderCard = ({
 export function OrderQueue() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const hasLoadedRef = useRef(false);
+  const prevCountRef = useRef<number>(0);
+  const prevIdsRef = useRef<Set<string>>(new Set());
   const { user } = useStore();
   const [error, setError] = useState<string | null>(null);
   const [applyingOrderId, setApplyingOrderId] = useState<string | null>(null);
 
-  const fetchQueue = async () => {
-    setIsLoading(true);
+  const fetchQueue = async (showSkeleton: boolean = false) => {
+    if (!hasLoaded && showSkeleton) {
+      setIsLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
     setError(null);
     try {
       const res = await fetch("/api/orders/queue");
@@ -235,7 +244,29 @@ export function OrderQueue() {
       const data: ApiResponse = await res.json();
 
       if (data.success) {
-        setOrders(data.data || []);
+        const next = data.data || [];
+        // Detect newly added by ID, not just count
+        const nextIds = new Set(next.map((o) => o.id));
+        let added = 0;
+        nextIds.forEach((id) => {
+          if (!prevIdsRef.current.has(id)) added += 1;
+        });
+        if (hasLoadedRef.current && added > 0) {
+          try {
+            const audio = new Audio("/sounds/notification.wav");
+            audio.volume = 0.5;
+            void audio.play();
+          } catch {}
+          const div = document.createElement("div");
+          div.className =
+            "fixed top-4 right-4 z-[9999] bg-black/80 text-white px-3 py-2 rounded border border-purple-500/40 shadow-lg";
+          div.textContent = `${added} new order${added > 1 ? "s" : ""} added`;
+          document.body.appendChild(div);
+          setTimeout(() => div.remove(), 2500);
+        }
+        setOrders(next);
+        prevCountRef.current = next.length;
+        prevIdsRef.current = nextIds;
       } else {
         // Handle the case where API returns { success: false }
         throw new Error(data.error || "The API returned an error.");
@@ -245,10 +276,22 @@ export function OrderQueue() {
       setError(err?.message || "something went wrong");
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
+      if (!hasLoadedRef.current) {
+        setHasLoaded(true);
+        hasLoadedRef.current = true;
+      }
     }
   };
   useEffect(() => {
-    fetchQueue();
+    let intervalId: any;
+    fetchQueue(true);
+    intervalId = setInterval(() => {
+      fetchQueue(false);
+    }, 7000);
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, []);
 
   const handleApply = async (orderId: string, customerId: string) => {
@@ -314,13 +357,13 @@ export function OrderQueue() {
         <List className="text-cyan-300" /> Order Queue
       </h1>
       <div>
-        <button
-          onClick={fetchQueue}
-          disabled={isLoading}
+        {/* <button
+          onClick={() => fetchQueue(false)}
+          disabled={isLoading || isRefreshing}
           className="text-white bg-cyan-700 hover:bg-cyan-800 px-4 py-2 rounded-lg font-medium disabled:opacity-50"
         >
-          {isLoading ? "Refreshing..." : "Refresh Queue"}
-        </button>
+          {isLoading || isRefreshing ? "Refreshing..." : "Refresh Queue"}
+        </button> */}
       </div>
 
       <div className="grid grid-cols-1 gap-6">{renderContent()}</div>

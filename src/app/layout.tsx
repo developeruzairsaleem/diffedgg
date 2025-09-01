@@ -1,8 +1,15 @@
+"use client";
 import type { Metadata } from "next";
 import { Lato, Orbitron, Poppins } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import SmoothScrollScript from "@/components/SmoothScrollScript";
+import dynamic from "next/dynamic";
+
+const NotificationContainer = dynamic(
+  () => import("@/components/notifications/NotificationContainer"),
+  { ssr: false }
+);
 
 const lato = Lato({
   variable: "--font-lato",
@@ -22,10 +29,10 @@ const poppins = Poppins({
   weight: ["400", "500", "700", "800", "900"],
 });
 
-export const metadata: Metadata = {
-  title: "Diffed.gg",
-  description: "Gaming",
-};
+// export const metadata: Metadata = {
+//   title: "Diffed.gg",
+//   description: "Gaming",
+// };
 
 export default function RootLayout({
   children,
@@ -38,6 +45,7 @@ export default function RootLayout({
         className={`${lato.variable} ${orbitron.variable} ${poppins.variable} antialiased`}
       >
         {/* <SmoothScrollScript /> */}
+        <NotificationContainer />
         <main>{children}</main>
         {/* <Footer /> */}
       </body>

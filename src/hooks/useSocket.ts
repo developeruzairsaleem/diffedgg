@@ -36,6 +36,9 @@ export function useSocket() {
       console.log("✅ CONNECTED to socket server - ID:", socketInstance.id);
       console.log("🔌 Transport:", socketInstance.io.engine.transport.name);
       setIsConnected(true);
+      // Expose globally for lightweight emits in pages without hook
+      // @ts-ignore
+      (window as any).__socketInstance = socketInstance;
     });
 
     socketInstance.on("disconnect", (reason) => {
