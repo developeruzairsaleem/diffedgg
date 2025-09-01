@@ -46,6 +46,19 @@ export default function ProviderOrdersPage() {
     });
   }, [fetchAssignments]);
 
+  // Effect for auto-refresh every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Only auto-refresh if not currently refreshing manually and page is not loading
+      if (!isRefreshing && !isPageLoading) {
+        fetchAssignments();
+      }
+    }, 5000); // 5 seconds
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [fetchAssignments, isRefreshing, isPageLoading]);
+
   // Handler for the refresh button
   const handleRefresh = async () => {
     setIsRefreshing(true);

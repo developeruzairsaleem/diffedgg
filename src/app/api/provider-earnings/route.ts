@@ -47,11 +47,11 @@ export const GET = async () => {
       (sum, tx) => sum.add(tx.amount),
       new Decimal(0)
     );
-    const totalEarnings = sumCompleted.add(wallet.balance);
+    // const totalEarnings = sumCompleted.add(wallet.balance);
 
     const responsePayload = {
       availableBalance: wallet.balance,
-      totalEarnings: totalEarnings,
+      totalEarnings: sumCompleted,
       transactionHistory: wallet.transactions,
     };
 
