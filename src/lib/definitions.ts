@@ -18,8 +18,8 @@ export const SignupFormSchema = z.object({
       message: "Contain at least one special character.",
     })
     .trim(),
-  role: z.enum(["provider", "customer"], {
-    message: "Role must be either 'provider' or 'customer'.",
+  role: z.enum(["provider", "customer", "admin"], {
+    message: "Role must be 'provider', 'customer', or 'admin'.",
   }),
 });
 

@@ -15,6 +15,7 @@ export default function AdminInvitesPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [invites, setInvites] = useState<Invite[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
     try {
@@ -22,7 +23,7 @@ export default function AdminInvitesPage() {
       const json = await res.json();
       if (!res.ok || !json.success)
         throw new Error(json.error || "Failed to load invites");
-      setInvites(json.data);
+      setInvites(json.data || []);
     } catch (e: any) {
       message.error(e?.message || "Failed to load invites");
     }
@@ -33,7 +34,11 @@ export default function AdminInvitesPage() {
   }, []);
 
   const createInvite = async () => {
-    if (!email) return;
+    setError(null);
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Enter a valid email");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/admin/invites", {
@@ -44,11 +49,7 @@ export default function AdminInvitesPage() {
       const json = await res.json();
       if (!res.ok || !json.success)
         throw new Error(json.error || "Failed to create invite");
-      message.success(
-        json.data?.emailSent
-          ? "Invite email sent"
-          : "Invite created (email not sent; copy link)"
-      );
+      message.success("Invite created. Copy the link below.");
       setEmail("");
       load();
     } catch (e: any) {
@@ -69,6 +70,9 @@ export default function AdminInvitesPage() {
           onChange={(e) => setEmail(e.target.value)}
           className="border rounded px-3 py-2 w-80"
         />
+        {error && (
+          <span className="text-red-600 text-sm self-center">{error}</span>
+        )}
         <button
           onClick={createInvite}
           disabled={loading}
@@ -115,6 +119,9 @@ export default function AdminInvitesPage() {
             </div>
           );
         })}
+        {invites.length === 0 && (
+          <div className="text-sm text-gray-600">No invites found.</div>
+        )}
       </div>
     </div>
   );

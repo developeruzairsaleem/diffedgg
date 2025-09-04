@@ -310,9 +310,9 @@ const GamesComponent = () => {
           </div>
           {index < steps.length - 1 && (
             <div
-              className={`w-8 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.number ? "bg-pink-500" : "bg-gray-600"
-                }`}
-
+              className={`w-8 h-0.5 mx-4 transition-all duration-300 ${
+                currentStep > step.number ? "bg-pink-500" : "bg-gray-600"
+              }`}
             />
           )}
         </div>
@@ -782,14 +782,13 @@ const GamesComponent = () => {
                   </div>
                 )
               ) || (
-                  <div className="col-span-full text-center py-8 sm:py-12">
-                    <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📦</div>
-                    <p className="text-gray-400 text-base sm:text-lg">
-                      No packages available for this service yet.
-                    </p>
-                  </div>
-                )}
-
+                <div className="col-span-full text-center py-8 sm:py-12">
+                  <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📦</div>
+                  <p className="text-gray-400 text-base sm:text-lg">
+                    No packages available for this service yet.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -835,7 +834,9 @@ const GamesComponent = () => {
                   <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                     <div className="bg-gray-900/30 rounded-lg p-3 sm:p-4 border border-gray-600/50">
                       <div className="flex items-center justify-between mb-2 sm:mb-3">
-                        <span className="text-gray-300 text-xs sm:text-sm">Package</span>
+                        <span className="text-gray-300 text-xs sm:text-sm">
+                          Package
+                        </span>
                         <span className="text-white font-semibold text-sm sm:text-base">
                           {selectedSubpackage.name}
                         </span>
@@ -849,20 +850,30 @@ const GamesComponent = () => {
                         </span>
                       </div>
 
-                       {/* Selected Rank Details */}
-                      {Array.isArray(selectedSubpackage.ranks) && selectedSubpackage.ranks.length > 0 && selectedRank && (
-                        <div className="flex items-center justify-between mb-2 sm:mb-3">
-                          <span className="text-gray-300 text-xs sm:text-sm">Selected Rank</span>
-                          <span className="text-pink-400 font-semibold text-sm sm:text-base">
-                            {selectedRank.name} <span className="text-cyan-400">(+${selectedRank.additionalCost})</span>
-                          </span>
-                        </div>
-                      )}
+                      {/* Selected Rank Details */}
+                      {Array.isArray(selectedSubpackage.ranks) &&
+                        selectedSubpackage.ranks.length > 0 &&
+                        selectedRank && (
+                          <div className="flex items-center justify-between mb-2 sm:mb-3">
+                            <span className="text-gray-300 text-xs sm:text-sm">
+                              Selected Rank
+                            </span>
+                            <span className="text-pink-400 font-semibold text-sm sm:text-base">
+                              {selectedRank.name}{" "}
+                              <span className="text-cyan-400">
+                                (+${selectedRank.additionalCost})
+                              </span>
+                            </span>
+                          </div>
+                        )}
                       {/* Always show number of games */}
                       <div className="flex items-center justify-between mb-2 sm:mb-3">
-                        <span className="text-gray-300 text-xs sm:text-sm">No. of Games</span>
-                        <span className="text-pink-400 font-semibold text-sm sm:text-base">{numGamesMap[selectedSubpackage.id] || 1}</span>
-
+                        <span className="text-gray-300 text-xs sm:text-sm">
+                          No. of Games
+                        </span>
+                        <span className="text-pink-400 font-semibold text-sm sm:text-base">
+                          {numGamesMap[selectedSubpackage.id] || 1}
+                        </span>
                       </div>
                       {/* Always show number of teammates */}
 

@@ -2,54 +2,14 @@ import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { decrypt } from "@/lib/sessions";
+import nodemailer from "nodemailer";
 
 function generateToken(): string {
   const rand = crypto.getRandomValues(new Uint8Array(16));
   return Array.from(rand, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function sendInviteEmail(toEmail: string, acceptUrl: string) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.INVITE_FROM_EMAIL || "no-reply@diffed.gg";
-  if (!apiKey) {
-    console.warn(
-      "RESEND_API_KEY not set; skipping email send. Accept URL:",
-      acceptUrl
-    );
-    return { sent: false };
-  }
-  const subject = "You're invited to join Diffed.gg as Admin";
-  const html = `
-    <div style="font-family:Arial,sans-serif;line-height:1.5">
-      <h2>Admin Invitation</h2>
-      <p>You have been invited to join Diffed.gg as an admin.</p>
-      <p>Please click the button below to accept the invite and create your admin account:</p>
-      <p>
-        <a href="${acceptUrl}"
-           style="display:inline-block;background:#6d28d9;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">
-           Accept Invite
-        </a>
-      </p>
-      <p>If the button doesn't work, copy and paste this link into your browser:</p>
-      <p><a href="${acceptUrl}">${acceptUrl}</a></p>
-      <p>This link will expire soon. If you did not expect this email, you can ignore it.</p>
-    </div>
-  `;
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from: fromEmail, to: [toEmail], subject, html }),
-  });
-  if (!res.ok) {
-    const msg = await res.text().catch(() => "");
-    console.error("Failed to send invite email:", res.status, msg);
-    return { sent: false };
-  }
-  return { sent: true };
-}
+// Email sending intentionally disabled per request; acceptUrl is returned in response for copying
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,7 +25,7 @@ export async function GET(request: NextRequest) {
       SELECT id, email, token, role, "expiresAt", "acceptedAt", "createdAt", "createdById"
       FROM "AdminInvite"
       ORDER BY "createdAt" DESC
-      LIMIT 50
+      LIMIT 10
     `) as any[];
     return NextResponse.json({ success: true, data: invites });
   } catch (e) {
@@ -109,11 +69,43 @@ export async function POST(request: NextRequest) {
     const acceptUrl = `${
       new URL(request.url).origin
     }/invite/accept?token=${token}`;
-    const sent = await sendInviteEmail(email, acceptUrl);
-    return NextResponse.json({
-      success: true,
-      data: { ...invite, acceptUrl, emailSent: sent.sent },
-    });
+
+    // Send email via nodemailer when SMTP env is configured
+    const host = process.env.SMTP_HOST as string | undefined;
+    const port = Number(process.env.SMTP_PORT || 587);
+    const user = process.env.SMTP_USER as string | undefined;
+    const pass = process.env.SMTP_PASS as string | undefined;
+    const from = process.env.INVITE_FROM_EMAIL || "no-reply@diffed.gg";
+    if (host && user && pass) {
+      const transporter = nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: { user, pass },
+      });
+      const html = `
+        <div style="font-family:Arial,sans-serif;line-height:1.5">
+          <h2>Admin Invitation</h2>
+          <p>You have been invited to join Diffed.gg as an admin.</p>
+          <p>Click the button below to accept the invite and create your admin account:</p>
+          <p>
+            <a href="${acceptUrl}"
+               style="display:inline-block;background:#6d28d9;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">
+               Accept Invite
+            </a>
+          </p>
+          <p>If the button doesn't work, copy and paste this link:</p>
+          <p><a href="${acceptUrl}">${acceptUrl}</a></p>
+        </div>`;
+      await transporter.sendMail({
+        from,
+        to: email,
+        subject: "You're invited to join Diffed.gg as Admin",
+        html,
+      });
+    }
+
+    return NextResponse.json({ success: true, data: { ...invite, acceptUrl } });
   } catch (e) {
     console.error("e", e);
     console.trace(e);
