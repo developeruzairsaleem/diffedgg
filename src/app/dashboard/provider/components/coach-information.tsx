@@ -18,10 +18,18 @@ type StatCardProps = {
   onClick?: () => void;
 };
 
-const StatCard = ({ icon: Icon, title, value, description, onClick }: StatCardProps) => (
+const StatCard = ({
+  icon: Icon,
+  title,
+  value,
+  description,
+  onClick,
+}: StatCardProps) => (
   <div
     style={{ borderColor: "#EE2C81", cursor: onClick ? "pointer" : "default" }}
-    className={`bg-black/30 backdrop-blur-sm p-6 rounded-lg border-l-4 shadow-lg transition-all duration-200 ${onClick ? "hover:shadow-pink-500/30 hover:bg-black/40" : ""}`}
+    className={`bg-black/30 backdrop-blur-sm p-6 rounded-lg border-l-4 shadow-lg transition-all duration-200 ${
+      onClick ? "hover:shadow-pink-500/30 hover:bg-black/40" : ""
+    }`}
     onClick={onClick}
     tabIndex={onClick ? 0 : undefined}
     role={onClick ? "button" : undefined}
@@ -85,28 +93,39 @@ const GameStatCard = ({ game }: { game: GameStat }) => (
 export default function ProviderOverviewPage() {
   const [overviewData, setOverviewData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  const fetchData = async (showSkeleton: boolean = false) => {
+    try {
+      if (!hasLoaded && showSkeleton) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
+      const response = await fetch("/api/provider-overview");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch overview.");
+      }
+
+      setOverviewData(data);
+    } catch (error) {
+      console.error("Fetch error:", error);
+      // @ts-ignore
+      message.error((error?.message as string) || "something went wrong");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+      if (!hasLoaded) setHasLoaded(true);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/provider-overview");
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch overview.");
-        }
-
-        setOverviewData(data);
-      } catch (error) {
-        console.error("Fetch error:", error);
-        // @ts-ignore
-        message.error((error?.message as string) || "something went wrong");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    const id = setInterval(() => fetchData(false), 8000);
+    fetchData(true);
+    return () => clearInterval(id);
   }, []);
 
   if (loading) {
@@ -133,7 +152,9 @@ export default function ProviderOverviewPage() {
 
   const handleGoToTab = (tab: TabName) => {
     window.dispatchEvent(
-      new CustomEvent<SwitchTabEventDetail>("provider-dashboard-switch-tab", { detail: { tab } })
+      new CustomEvent<SwitchTabEventDetail>("provider-dashboard-switch-tab", {
+        detail: { tab },
+      })
     );
   };
 
@@ -167,12 +188,11 @@ export default function ProviderOverviewPage() {
         />
       </div>
 
-
       <div>
         <QueueOverview />
       </div>
 
-       {/* Game-by-Game Performance */}
+      {/* Game-by-Game Performance */}
       <div>
         <h2
           className={`text-2xl font-bold text-white mb-6 ${orbitron.className}`}
@@ -194,7 +214,6 @@ export default function ProviderOverviewPage() {
           </div>
         )}
       </div>
-      
     </div>
   );
 }

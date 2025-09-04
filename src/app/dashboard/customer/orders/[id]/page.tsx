@@ -33,7 +33,10 @@ import OverlayLoader from "@/components/ui/OverlayLoader";
 
 // Zod schema for cancellation form
 const cancellationSchema = z.object({
-  reason: z.string().min(1, "Cancellation reason is required").min(10, "Please provide a detailed reason (at least 10 characters)"),
+  reason: z
+    .string()
+    .min(1, "Cancellation reason is required")
+    .min(10, "Please provide a detailed reason (at least 10 characters)"),
 });
 
 type CancellationFormData = z.infer<typeof cancellationSchema>;
@@ -73,6 +76,30 @@ export default function OrderDetailPage() {
 
   // Watch the reason field to enable/disable the confirm button
   const reasonValue = watch("reason");
+
+  // Setup lightweight socket emitter via REST endpoint to ensure server io exists
+  const notifyProvidersOfCancellation = async (cancelledOrderId: string) => {
+    try {
+      // Hit the socket handler to initialize server if needed
+      await fetch("/api/socket");
+      // Collect approved provider ids from current order in memory
+      const providerIds = (order?.assignments || [])
+        .filter((a) => a.status === "APPROVED")
+        .map((a) => a.providerId);
+      // Emit from client using window.io if present, else fallback to POST
+      // We already have a socket hook elsewhere; using a tiny dynamic emit to avoid extra imports here
+      // @ts-ignore
+      const socket = (window as any)?.__socketInstance;
+      if (socket && typeof socket.emit === "function") {
+        socket.emit("customer-cancel-order", {
+          orderId: cancelledOrderId,
+          providerIds,
+        });
+      } else {
+        // Fallback: call a minimal fetch to the socket path so server can broadcast via side-effect is not available, we skip
+      }
+    } catch {}
+  };
 
   // Add wallet refetch function
   const fetchWallet = async () => {
@@ -747,7 +774,9 @@ export default function OrderDetailPage() {
               rows={4}
             />
             {errors.reason && (
-              <p className="text-red-400 text-sm mt-1">{errors.reason.message}</p>
+              <p className="text-red-400 text-sm mt-1">
+                {errors.reason.message}
+              </p>
             )}
           </div>
           <div className="flex gap-3 justify-center">
@@ -771,7 +800,7 @@ export default function OrderDetailPage() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                       status: "CANCELLED",
-                      cancelReason: data.reason
+                      cancelReason: data.reason,
                     }),
                   });
                   const json = await res.json();
@@ -779,6 +808,8 @@ export default function OrderDetailPage() {
                     message.error(json.error || "Failed to cancel order");
                   } else {
                     message.success("Order cancelled");
+                    // Notify providers via socket broadcast
+                    await notifyProvidersOfCancellation(orderId);
                     await fetchOrder();
                     setCancelModalOpen(false);
                     reset(); // Reset form after successful cancellation

@@ -78,6 +78,28 @@ export default async function SocketHandler(
         );
       });
 
+      // Customer cancels an order
+      // Data: { orderId: string, providerIds: string[] }
+      socket.on(
+        "customer-cancel-order",
+        (data: { orderId: string; providerIds: string[] }) => {
+          // Broadcast globally; clients will filter by their own user id
+          io.emit("order-cancelled", {
+            orderId: data.orderId,
+            providerIds: Array.isArray(data.providerIds)
+              ? data.providerIds
+              : [],
+          });
+          console.log(
+            `Order ${
+              data.orderId
+            } cancelled by customer; notifying providers: ${
+              (data.providerIds || []).length
+            }`
+          );
+        }
+      );
+
       // Customer rerolls a provider slot
       // Data: { orderId: string, providerId: string }
       socket.on("customer-reroll-provider", (data) => {
