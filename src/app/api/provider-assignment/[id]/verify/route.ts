@@ -65,7 +65,9 @@ export async function PUT(
         type: "deposit",
         amount: currentProviderEarning,
         status: "completed",
-        description: ` $${currentProviderEarning} has been deposited in your wallet by admin for your order.`,
+        description: `$${currentProviderEarning.toFixed(
+          2
+        )} has been deposited in your wallet by admin for your order.`,
       },
     });
     return NextResponse.json(
