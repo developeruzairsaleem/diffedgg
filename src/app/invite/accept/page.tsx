@@ -1,11 +1,13 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { message } from "antd";
 import { useFormState, useFormStatus } from "react-dom";
 import { acceptAdminInvite } from "@/actions/auth";
 
-export default function AcceptInvitePage() {
+export const dynamic = "force-dynamic";
+
+function AcceptInviteClient() {
   const router = useRouter();
   const params = useSearchParams();
   const token = (params?.get("token") as string) || "";
@@ -119,5 +121,13 @@ export default function AcceptInvitePage() {
         <SubmitButton />
       </form>
     </div>
+  );
+}
+
+export default function AcceptInvitePage() {
+  return (
+    <Suspense fallback={<div className="text-white">Loading…</div>}>
+      <AcceptInviteClient />
+    </Suspense>
   );
 }
