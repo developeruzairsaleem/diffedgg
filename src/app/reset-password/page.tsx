@@ -1,17 +1,19 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Check } from "lucide-react";
 import { orbitron, roboto } from "@/fonts/fonts";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 type ResetPasswordFormValues = {
   password: string;
   confirmPassword: string;
 };
 
-const ResetPasswordPage = () => {
+function ResetPasswordClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -101,11 +103,14 @@ const ResetPasswordPage = () => {
             </div>
             <div className="space-y-4">
               <Check className="w-16 h-16 text-green-400 mx-auto" />
-              <h1 className={`text-2xl font-bold text-white ${orbitron.className}`}>
+              <h1
+                className={`text-2xl font-bold text-white ${orbitron.className}`}
+              >
                 Password Reset Successful
               </h1>
               <p className={`${roboto.className} text-gray-200 text-md`}>
-                Your password has been successfully reset. You will be redirected to the login page in a few seconds.
+                Your password has been successfully reset. You will be
+                redirected to the login page in a few seconds.
               </p>
             </div>
           </div>
@@ -132,7 +137,9 @@ const ResetPasswordPage = () => {
                 objectFit="cover"
               />
             </div>
-            <h1 className={`text-2xl font-bold text-white ${orbitron.className}`}>
+            <h1
+              className={`text-2xl font-bold text-white ${orbitron.className}`}
+            >
               Reset Your Password
             </h1>
             <p className={`${roboto.className} text-gray-200 text-md`}>
@@ -157,7 +164,8 @@ const ResetPasswordPage = () => {
                     },
                     pattern: {
                       value: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9])/,
-                      message: "Password must contain at least one letter, one number, and one special character",
+                      message:
+                        "Password must contain at least one letter, one number, and one special character",
                     },
                   })}
                   type={showPassword ? "text" : "password"}
@@ -200,7 +208,9 @@ const ResetPasswordPage = () => {
                   })}
                   type={showConfirmPassword ? "text" : "password"}
                   className={`w-full px-4 py-3 pr-12 border rounded-lg bg-transparent text-white placeholder:text-gray-300 focus:outline-none ${
-                    errors.confirmPassword ? "border-red-500" : "border-gray-300"
+                    errors.confirmPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                   placeholder="Confirm your new password"
                   autoComplete="off"
@@ -246,6 +256,12 @@ const ResetPasswordPage = () => {
       </div>
     </div>
   );
-};
+}
 
-export default ResetPasswordPage;
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="text-white">Loading…</div>}>
+      <ResetPasswordClient />
+    </Suspense>
+  );
+}
