@@ -51,6 +51,7 @@ interface Order {
   customerId: string;
   subpackageId: string;
   discordTag: string;
+  customer?: any;
   discordUsername: string;
   price: number;
   status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELED";
@@ -163,6 +164,14 @@ const OrderCard = ({
           <div className="flex gap-x-6 gap-y-2 flex-wrap">
             <div>
               <p className="text-xs text-gray-400 uppercase font-semibold">
+                Customer
+              </p>
+              <p className="text-white font-medium truncate max-w-xs">
+                {order.customer.username}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 uppercase font-semibold">
                 Package
               </p>
               <p className="text-white font-medium truncate max-w-xs">
@@ -227,6 +236,38 @@ export function QueueOverview() {
   const [error, setError] = useState<string | null>(null);
   const [applyingOrderId, setApplyingOrderId] = useState<string | null>(null);
 
+  const [hasActiveAssignments, setHasActiveAssignments] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [inProgressCount, setInProgressCount] = useState(0);
+
+  const checkActiveAssignments = async () => {
+    try {
+      const response = await fetch("/api/provider-assignments");
+      const assignments = await response.json();
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch assignments");
+      }
+
+      // Count assignments with PENDING status
+      const pending = assignments.filter((assignment: any) => assignment.status === "PENDING").length;
+
+      // Count assignments where the order status is IN_PROGRESS
+      // const inProgress = assignments.filter((assignment: any) => assignment.order?.status === "IN_PROGRESS").length;
+            const inProgress = assignments.filter((assignment: any) => assignment.status === "APPROVED").length;
+
+
+
+      setPendingCount(pending);
+      setInProgressCount(inProgress);
+      setHasActiveAssignments(pending > 0 || inProgress > 0);
+
+      return pending > 0 || inProgress > 0;
+    } catch (err: any) {
+      console.error("Failed to check active assignments:", err);
+      return false;
+    }
+  };
   const fetchQueue = async (showSkeleton: boolean = false) => {
     if (!hasLoaded && showSkeleton) {
       setIsLoading(true);
@@ -234,7 +275,17 @@ export function QueueOverview() {
       setIsRefreshing(true);
     }
     setError(null);
+
     try {
+      // First check if provider has active assignments
+      const hasActive = await checkActiveAssignments();
+
+      if (hasActive) {
+        // If provider has active assignments, don't fetch queue
+        setOrders([]);
+        return;
+      }
+
       const res = await fetch("/api/orders/queue");
 
       if (!res.ok) {
@@ -245,6 +296,7 @@ export function QueueOverview() {
 
       if (data.success) {
         const next = data.data || [];
+        // Detect newly added by ID, not just count
         const nextIds = new Set(next.map((o) => o.id));
         let added = 0;
         nextIds.forEach((id) => {
@@ -255,7 +307,7 @@ export function QueueOverview() {
             const audio = new Audio("/sounds/notification.wav");
             audio.volume = 0.5;
             void audio.play();
-          } catch {}
+          } catch { }
           const div = document.createElement("div");
           div.className =
             "fixed top-4 right-4 z-[9999] bg-black/80 text-white px-3 py-2 rounded border border-purple-500/40 shadow-lg";
@@ -282,6 +334,62 @@ export function QueueOverview() {
       }
     }
   };
+
+  // const fetchQueue = async (showSkeleton: boolean = false) => {
+  //   if (!hasLoaded && showSkeleton) {
+  //     setIsLoading(true);
+  //   } else {
+  //     setIsRefreshing(true);
+  //   }
+  //   setError(null);
+  //   try {
+  //     const res = await fetch("/api/orders/queue");
+
+  //     if (!res.ok) {
+  //       throw new Error("Failed to fetch data from the server.");
+  //     }
+
+  //     const data: ApiResponse = await res.json();
+
+  //     if (data.success) {
+  //       const next = data.data || [];
+  //       const nextIds = new Set(next.map((o) => o.id));
+  //       let added = 0;
+  //       nextIds.forEach((id) => {
+  //         if (!prevIdsRef.current.has(id)) added += 1;
+  //       });
+  //       if (hasLoadedRef.current && added > 0) {
+  //         try {
+  //           const audio = new Audio("/sounds/notification.wav");
+  //           audio.volume = 0.5;
+  //           void audio.play();
+  //         } catch {}
+  //         const div = document.createElement("div");
+  //         div.className =
+  //           "fixed top-4 right-4 z-[9999] bg-black/80 text-white px-3 py-2 rounded border border-purple-500/40 shadow-lg";
+  //         div.textContent = `${added} new order${added > 1 ? "s" : ""} added`;
+  //         document.body.appendChild(div);
+  //         setTimeout(() => div.remove(), 2500);
+  //       }
+  //       setOrders(next);
+  //       prevCountRef.current = next.length;
+  //       prevIdsRef.current = nextIds;
+  //     } else {
+  //       // Handle the case where API returns { success: false }
+  //       throw new Error(data.error || "The API returned an error.");
+  //     }
+  //   } catch (err: any) {
+  //     console.error("Failed to fetch queue:", err);
+  //     setError(err?.message || "something went wrong");
+  //   } finally {
+  //     setIsLoading(false);
+  //     setIsRefreshing(false);
+  //     if (!hasLoadedRef.current) {
+  //       setHasLoaded(true);
+  //       hasLoadedRef.current = true;
+  //     }
+  //   }
+  // };
   useEffect(() => {
     let intervalId: any;
     fetchQueue(true);
@@ -315,6 +423,7 @@ export function QueueOverview() {
       message.success(
         `Successfully applied for order ${orderId}! The customer has been notified.`
       );
+      fetchQueue();
     } catch (error: any) {
       console.error("Application failed:", error);
       message.error(`Error: ${error.message}`);
@@ -337,17 +446,59 @@ export function QueueOverview() {
     if (error) {
       return <ErrorState message={error} />;
     }
+    if (hasActiveAssignments) {
+      return (
+        <div className="text-center mb-12 py-20 px-6 rounded-lg bg-black/20 border border-white/10 col-span-full">
+          <AlertTriangle className="w-16 h-16 mx-auto text-yellow-400" />
+          <h3 className="mt-4 text-2xl font-semibold text-white">
+            You already have active assignments in progress
+          </h3>
+          <div className="mt-4 space-y-2">
+            {inProgressCount > 0 && (
+              <p className="text-white/70">
+                <span className="font-semibold text-blue-400">{inProgressCount}</span> order{inProgressCount !== 1 ? 's' : ''} in progress
+              </p>
+            )}
+            {pendingCount > 0 && (
+              <p className="text-white/70">
+                <span className="font-semibold text-yellow-400">{pendingCount}</span> order{pendingCount !== 1 ? 's' : ''} pending
+              </p>
+            )}
+          </div>
+          <p className="mt-4 text-gray-400">
+            Complete your current assignments to see new opportunities!
+          </p>
+        </div>
+      );
+    }
+
+
+
+
     if (orders.length > 0) {
-      return orders
-        .slice(0, 5)
-        .map((order) => (
-          <OrderCard
-            key={order.id}
-            order={order}
-            onApply={handleApply}
-            isApplying={applyingOrderId === order.id}
-          />
-        ));
+      return (
+        <>
+          {orders
+            .slice(0, 5)
+            .map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onApply={handleApply}
+                isApplying={applyingOrderId === order.id}
+              />
+            ))}
+          {/* View More Button */}
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={handleViewMore}
+              className="text-white bg-purple-700 hover:bg-purple-800 px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-300"
+            >
+              View More
+            </button>
+          </div>
+        </>
+      )
     }
     return <EmptyQueue />;
   };
@@ -384,15 +535,7 @@ export function QueueOverview() {
 
       <div className="grid grid-cols-1 gap-6">{renderContent()}</div>
 
-      {/* View More Button */}
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={handleViewMore}
-          className="text-white bg-purple-700 hover:bg-purple-800 px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-300"
-        >
-          View More
-        </button>
-      </div>
+
     </div>
   );
 }
