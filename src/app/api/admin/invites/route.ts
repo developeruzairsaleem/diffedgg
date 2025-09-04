@@ -2,7 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { decrypt } from "@/lib/sessions";
-import nodemailer from "nodemailer";
+// Avoid static import to prevent build-time dependency if not installed in some envs
+// We'll dynamically import nodemailer only when SMTP env is configured
 
 function generateToken(): string {
   const rand = crypto.getRandomValues(new Uint8Array(16));
@@ -77,7 +78,8 @@ export async function POST(request: NextRequest) {
     const pass = process.env.SMTP_PASS as string | undefined;
     const from = process.env.INVITE_FROM_EMAIL || "no-reply@diffed.gg";
     if (host && user && pass) {
-      const transporter = nodemailer.createTransport({
+      const nodemailerMod: any = await import("nodemailer");
+      const transporter = nodemailerMod.createTransport({
         host,
         port,
         secure: port === 465,
