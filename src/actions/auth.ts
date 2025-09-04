@@ -117,9 +117,106 @@ export async function signup(state: any, formData: FormData) {
       errors: {
         message: "Something went wrong registering",
         // message: error instanceof Error ? error.message : "An unknown error occurred",
-
       },
     };
+  }
+}
+
+// Accept admin invite: create or update admin account, invalidate token, and start session
+export async function acceptAdminInvite(state: any, formData: FormData) {
+  try {
+    const username = String(formData.get("username") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+    const password = String(formData.get("password") || "").trim();
+    const inviteToken = String(formData.get("inviteToken") || "").trim();
+
+    // Basic server-side validation
+    if (!username || !/^[a-zA-Z0-9_]{3,}$/.test(username)) {
+      return { errors: { message: "Invalid username format" } };
+    }
+    if (
+      !password ||
+      !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password)
+    ) {
+      return { errors: { message: "Password too weak" } };
+    }
+    if (!inviteToken) {
+      return { errors: { message: "Missing invite token" } };
+    }
+
+    // Validate invite
+    const invites = (await prisma.$queryRaw<any[]>`
+      SELECT id, email, token, role, "expiresAt", "acceptedAt"
+      FROM "AdminInvite" WHERE token = ${inviteToken} LIMIT 1
+    `) as any[];
+    const invite = invites?.[0];
+    if (!invite) {
+      return { errors: { message: "Invalid or expired invite token" } };
+    }
+    if (invite.acceptedAt) {
+      return { errors: { message: "Invite already used" } };
+    }
+    if (invite.expiresAt < new Date()) {
+      return { errors: { message: "Invite has expired" } };
+    }
+    if (invite.email.toLowerCase() !== email.toLowerCase()) {
+      return { errors: { message: "Invite email does not match" } };
+    }
+
+    // Check if user exists by email
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+
+    // Ensure username unique (if different from existing user's)
+    const usernameOwner = await prisma.user.findFirst({ where: { username } });
+    if (
+      usernameOwner &&
+      (!existingUser || usernameOwner.id !== existingUser.id)
+    ) {
+      return { errors: { message: "Username already exists" } };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    let userId = "";
+
+    if (existingUser) {
+      // Update existing user with new credentials and promote to admin
+      const updated = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          username,
+          password: hashedPassword,
+          role: "admin" as any,
+          status: "active" as any,
+        },
+      });
+      userId = updated.id;
+    } else {
+      // Create new admin user
+      const created = await prisma.user.create({
+        data: {
+          username,
+          email,
+          password: hashedPassword,
+          role: "admin" as any,
+          status: "active" as any,
+        },
+      });
+      userId = created.id;
+      // Optionally create wallet to keep consistency
+      await createWallet(userId);
+    }
+
+    // Mark invite as accepted (one-time use)
+    await prisma.$executeRawUnsafe(
+      `UPDATE "AdminInvite" SET "acceptedAt" = now() WHERE token = $1`,
+      inviteToken
+    );
+
+    // Create session and redirect
+    await createSession(userId, "admin");
+    return { user: { id: userId, role: "admin" } };
+  } catch (error) {
+    return { errors: { message: "Failed to accept invite" } };
   }
 }
 
