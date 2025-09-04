@@ -68,6 +68,11 @@ export default function AdminLayout({
       label: <Link href="/admin/providers">Providers</Link>,
     },
     {
+      key: "/admin/invites",
+      icon: <UserOutlined />,
+      label: <Link href="/admin/invites">Invites</Link>,
+    },
+    {
       key: "/admin/payout-requests",
       icon: <DollarOutlined />,
       label: <Link href="/admin/payout-requests">Payout Requests</Link>,

@@ -58,13 +58,35 @@ export async function signup(state: any, formData: FormData) {
     // hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Admin invite token support
+    const inviteToken = String(formData.get("inviteToken") || "").trim();
+    if (inviteToken) {
+      const inviteArr = (await prisma.$queryRaw<any[]>`
+        SELECT id, email, token, role, "expiresAt", "acceptedAt"
+        FROM "AdminInvite" WHERE token = ${inviteToken} LIMIT 1
+      `) as any[];
+      const invite = inviteArr?.[0];
+      if (!invite) {
+        return { errors: { message: "Invalid or expired invite token" } };
+      }
+      if (invite.acceptedAt) {
+        return { errors: { message: "Invite already used" } };
+      }
+      if (invite.expiresAt < new Date()) {
+        return { errors: { message: "Invite has expired" } };
+      }
+      if (invite.email.toLowerCase() !== email.toLowerCase()) {
+        return { errors: { message: "Invite email does not match" } };
+      }
+    }
+
     // 3. Insert the user into the database
     const user = await prisma.user.create({
       data: {
         username,
         email,
         password: hashedPassword,
-        role,
+        role: inviteToken ? ("admin" as any) : role,
         status: role === "provider" ? "inactive" : "active",
       },
     });
@@ -79,6 +101,14 @@ export async function signup(state: any, formData: FormData) {
 
     // create user wallet entry in the database
     const wallet = await createWallet(user.id);
+
+    // mark invite accepted if used
+    if (inviteToken) {
+      await prisma.$executeRawUnsafe(
+        `UPDATE "AdminInvite" SET "acceptedAt" = now() WHERE token = $1`,
+        inviteToken
+      );
+    }
     // create the session
     await createSession(user.id, user.role);
     return { user };

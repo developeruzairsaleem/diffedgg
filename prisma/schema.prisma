@@ -222,6 +222,20 @@ model Chat {
   sender User  @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }
 
+model AdminInvite {
+  id          String    @id @default(cuid())
+  email       String
+  token       String    @unique
+  role        Role      @default(admin)
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  createdById String
+
+  @@index([email])
+  @@index([token])
+}
+
 enum OrderStatus {
   PENDING
   IN_PROGRESS
