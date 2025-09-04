@@ -93,17 +93,19 @@ model Game {
 
 // new changes to schema
 model User {
-  id           String   @id @default(cuid())
-  username     String   @unique
-  email        String   @unique
-  bio          String?
-  password     String
-  role         Role
-  status       Status   @default(active)
-  stripeCustId String?  @map("stripe_customer_id")
-  profileImage String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                     String    @id @default(cuid())
+  username               String    @unique
+  email                  String    @unique
+  bio                    String?
+  password               String
+  role                   Role
+  status                 Status    @default(active)
+  stripeCustId           String?   @map("stripe_customer_id")
+  profileImage           String?
+  passwordResetToken     String?   @unique @map("password_reset_token")
+  passwordResetExpiresAt DateTime? @map("password_reset_expires_at")
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   wallet      Wallet?
   orders      Order[]           @relation("CustomerOrders")
