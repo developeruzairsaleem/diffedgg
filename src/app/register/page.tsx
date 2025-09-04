@@ -12,6 +12,7 @@ type FormValues = {
   email: string;
   password: string;
   role: "customer" | "provider";
+  terms: boolean;
 };
 
 const SignupForm = () => {
@@ -31,6 +32,7 @@ const SignupForm = () => {
       email: "",
       password: "",
       role: "customer",
+      terms: false,
     },
   });
 
@@ -62,7 +64,7 @@ const SignupForm = () => {
       setServerError("");
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, value);
+        formData.append(key, String(value));
       });
       const response = await signup("state", formData); // ✅ This will update `state`
       if (response?.errors?.message) {
@@ -274,6 +276,40 @@ const SignupForm = () => {
                     </span>
                   </div>
                 </div>
+              )}
+            </div>
+
+            {/* Terms and Conditions Checkbox */}
+            <div className="space-y-2">
+              <label className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  {...register("terms", { required: "You must accept the Terms of Service and Privacy Policy" })}
+                  className="h-4 w-4 mt-1 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                />
+                <span className="text-sm text-gray-200 leading-relaxed">
+                  By signing up, you agree to our{" "}
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    className="text-cyan-400 underline hover:text-cyan-300 transition-colors"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    className="text-cyan-400 underline hover:text-cyan-300 transition-colors"
+                  >
+                    Privacy Policy
+                  </a>.
+                </span>
+              </label>
+              {errors.terms && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.terms.message}
+                </p>
               )}
             </div>
 

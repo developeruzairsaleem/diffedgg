@@ -86,6 +86,8 @@ export async function signup(state: any, formData: FormData) {
     return {
       errors: {
         message: "Something went wrong registering",
+        // message: error instanceof Error ? error.message : "An unknown error occurred",
+
       },
     };
   }
