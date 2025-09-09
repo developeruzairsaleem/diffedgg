@@ -52,6 +52,7 @@ interface Order {
   subpackageId: string;
   discordTag: string;
   discordUsername: string;
+  customer?: any;
   price: number;
   status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELED";
   notes: string | null;
@@ -163,6 +164,14 @@ const OrderCard = ({
           <div className="flex gap-x-6 gap-y-2 flex-wrap">
             <div>
               <p className="text-xs text-gray-400 uppercase font-semibold">
+                Customer
+              </p>
+              <p className="text-white font-medium truncate max-w-xs">
+                {order.customer.username}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 uppercase font-semibold">
                 Package
               </p>
               <p className="text-white font-medium truncate max-w-xs">
@@ -226,6 +235,36 @@ export function OrderQueue() {
   const { user } = useStore();
   const [error, setError] = useState<string | null>(null);
   const [applyingOrderId, setApplyingOrderId] = useState<string | null>(null);
+  const [hasActiveAssignments, setHasActiveAssignments] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [inProgressCount, setInProgressCount] = useState(0);
+
+  const checkActiveAssignments = async () => {
+    try {
+      const response = await fetch("/api/provider-assignments");
+      const assignments = await response.json();
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch assignments");
+      }
+
+      // Count assignments with PENDING status
+      const pending = assignments.filter((assignment: any) => assignment.status === "PENDING").length;
+      
+      // Count assignments where the order status is IN_PROGRESS
+      // const inProgress = assignments.filter((assignment: any) => assignment.order?.status === "IN_PROGRESS").length;
+            const inProgress = assignments.filter((assignment: any) => assignment.status === "APPROVED").length;
+
+      setPendingCount(pending);
+      setInProgressCount(inProgress);
+      setHasActiveAssignments(pending > 0 || inProgress > 0);
+
+      return pending > 0 || inProgress > 0;
+    } catch (err: any) {
+      console.error("Failed to check active assignments:", err);
+      return false;
+    }
+  };
 
   const fetchQueue = async (showSkeleton: boolean = false) => {
     if (!hasLoaded && showSkeleton) {
@@ -234,7 +273,17 @@ export function OrderQueue() {
       setIsRefreshing(true);
     }
     setError(null);
+    
     try {
+      // First check if provider has active assignments
+      const hasActive = await checkActiveAssignments();
+      
+      if (hasActive) {
+        // If provider has active assignments, don't fetch queue
+        setOrders([]);
+        return;
+      }
+
       const res = await fetch("/api/orders/queue");
 
       if (!res.ok) {
@@ -316,6 +365,7 @@ export function OrderQueue() {
       message.success(
         `Successfully applied for order ${orderId}! The customer has been notified.`
       );
+      fetchQueue();
     } catch (error: any) {
       console.error("Application failed:", error);
       message.error(`Error: ${error.message}`);
@@ -337,6 +387,31 @@ export function OrderQueue() {
     }
     if (error) {
       return <ErrorState message={error} />;
+    }
+    if (hasActiveAssignments) {
+      return (
+        <div className="text-center py-20 px-6 rounded-lg bg-black/20 border border-white/10 col-span-full">
+          <AlertTriangle className="w-16 h-16 mx-auto text-yellow-400" />
+          <h3 className="mt-4 text-2xl font-semibold text-white">
+            You already have active assignments in progress
+          </h3>
+          <div className="mt-4 space-y-2">
+            {inProgressCount > 0 && (
+              <p className="text-white/70">
+                <span className="font-semibold text-blue-400">{inProgressCount}</span> order{inProgressCount !== 1 ? 's' : ''} in progress
+              </p>
+            )}
+            {pendingCount > 0 && (
+              <p className="text-white/70">
+                <span className="font-semibold text-yellow-400">{pendingCount}</span> order{pendingCount !== 1 ? 's' : ''} pending
+              </p>
+            )}
+          </div>
+          <p className="mt-4 text-gray-400">
+            Complete your current assignments to see new opportunities!
+          </p>
+        </div>
+      );
     }
     if (orders.length > 0) {
       return orders.map((order) => (

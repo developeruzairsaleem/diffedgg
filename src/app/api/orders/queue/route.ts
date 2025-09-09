@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         // Include any relevant data providers need to see before applying
+        customer: true,
         subpackage: {
           include: {
             service: {
