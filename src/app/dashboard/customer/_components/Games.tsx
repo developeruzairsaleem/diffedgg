@@ -23,6 +23,11 @@ const GamesComponent = () => {
   const [currentELO, setCurrentELO] = useState<number>(0);
   const [targetELO, setTargetELO] = useState<number>(0);
   const [currentStep, setCurrentStep] = useState(1);
+  // ------------------------
+  const [dynamicPackages, setDynamicPackages] = useState<any[]>([]);
+  const [selectedDynamicPackage, setSelectedDynamicPackage] =
+    useState<any>(null);
+  const [sliderValue, setSliderValue] = useState<number>(0);
   const router = useRouter();
   const store = useStore();
 
@@ -75,16 +80,44 @@ const GamesComponent = () => {
     }
   }, [selectedSubpackage]);
 
+  // Group dynamic packages when service changes
+  useEffect(() => {
+    if (selectedService) {
+      const dynamicPkgs =
+        selectedService.subpackages?.filter(
+          (pkg: any) => pkg.dynamicPricing && pkg.maxELO
+        ) || [];
+
+      // Sort by minELO to create proper slider ranges
+      dynamicPkgs.sort((a: any, b: any) => a.minELO - b.minELO);
+
+      setDynamicPackages(dynamicPkgs);
+
+      // Set first dynamic package as default if available
+      if (dynamicPkgs.length > 0) {
+        setSelectedDynamicPackage(dynamicPkgs[0]);
+        setSliderValue(0);
+        setCurrentELO(dynamicPkgs[0].minELO);
+        setTargetELO(dynamicPkgs[0].maxELO);
+      }
+    } else {
+      setDynamicPackages([]);
+      setSelectedDynamicPackage(null);
+      setSliderValue(0);
+    }
+  }, [selectedService]);
+
   // Calculate total price for dynamic pricing
   const calculateTotalPrice = () => {
-    if (!selectedSubpackage) return 0;
+    const packageToUse = selectedDynamicPackage || selectedSubpackage;
+    if (!packageToUse) return 0;
 
-    let basePrice = selectedSubpackage.price;
+    let basePrice = packageToUse.price;
 
     // Add selected rank additional cost if a rank is selected
     if (
-      Array.isArray(selectedSubpackage.ranks) &&
-      selectedSubpackage.ranks.length > 0 &&
+      Array.isArray(packageToUse.ranks) &&
+      packageToUse.ranks.length > 0 &&
       selectedRank &&
       typeof selectedRank.additionalCost === "number"
     ) {
@@ -92,22 +125,20 @@ const GamesComponent = () => {
     }
 
     // Multiply by number of games if > 1
-    if (numGamesMap[selectedSubpackage.id] > 1) {
-      basePrice *= numGamesMap[selectedSubpackage.id];
+    const packageId = packageToUse.id;
+    if (numGamesMap[packageId] > 1) {
+      basePrice *= numGamesMap[packageId];
     }
 
     // Multiply by number of teammates if > 1
-    if (numTeammatesMap[selectedSubpackage.id] > 1) {
-      basePrice *= numTeammatesMap[selectedSubpackage.id];
+    if (numTeammatesMap[packageId] > 1) {
+      basePrice *= numTeammatesMap[packageId];
     }
 
     // Dynamic pricing logic
-    if (
-      selectedSubpackage.dynamicPricing &&
-      selectedSubpackage.basePricePerELO
-    ) {
+    if (packageToUse.dynamicPricing && packageToUse.basePricePerELO) {
       const eloDifference = Math.abs(targetELO - currentELO);
-      const eloCost = eloDifference * selectedSubpackage.basePricePerELO;
+      const eloCost = eloDifference * packageToUse.basePricePerELO;
       return basePrice + eloCost;
     }
 
@@ -183,23 +214,35 @@ const GamesComponent = () => {
     fetchGames();
   }, []);
 
+  // Handle slider value change
+  const handleSliderChange = (value: number) => {
+    setSliderValue(value);
+    if (dynamicPackages[value]) {
+      setSelectedDynamicPackage(dynamicPackages[value]);
+      setCurrentELO(dynamicPackages[value].minELO);
+      setTargetELO(dynamicPackages[value].maxELO);
+    }
+  };
+
   const handleQuickPay = (subpackage: any) => {
-    if (selectedSubpackage?.id !== subpackage.id) {
+    const packageToUse = selectedDynamicPackage || subpackage;
+    if (selectedSubpackage?.id !== packageToUse.id) {
       setSelectedRank(null); // Only reset rank if switching subpackage
     }
-    setSelectedSubpackage(subpackage);
+    setSelectedSubpackage(packageToUse);
     setIsModalOpen(true);
   };
 
   const handleCheckout = (subpackage: any) => {
-    if (selectedSubpackage?.id !== subpackage.id) {
+    const packageToUse = selectedDynamicPackage || subpackage;
+    if (selectedSubpackage?.id !== packageToUse.id) {
       setSelectedRank(null); // Only reset rank if switching subpackage
     }
-    const choosedPackage = { ...subpackage };
+    const choosedPackage = { ...packageToUse };
     console.log("choosedPackage", choosedPackage);
     console.log("no of games", numGamesMap[choosedPackage.id]);
     console.log("no of teammates", numTeammatesMap[choosedPackage.id]);
-    setSelectedSubpackage(subpackage);
+    setSelectedSubpackage(packageToUse);
     setIsCheckoutModalOpen(true);
   };
   const confirmCheckout = () => {
@@ -484,9 +527,340 @@ const GamesComponent = () => {
                 ← Back to Services
               </button>
             </div>
+
+            {/* Dynamic Package Slider */}
+            {dynamicPackages.length > 0 && (
+              <div className="mb-8">
+                <div className="bg-[#5E2047] rounded-xl p-6 border border-pink-500/30">
+                  <div className="text-center mb-6">
+                    <h3
+                      className={`${orbitron.className} text-xl font-bold text-white mb-2`}
+                    >
+                      Dynamic ELO Packages
+                    </h3>
+                    <p className="text-gray-300 text-sm">
+                      Choose your ELO range and customize your boost
+                    </p>
+                  </div>
+
+                  {/* ELO Range Slider */}
+                  <div className="mb-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-cyan-400 font-semibold">
+                        ELO Range:
+                      </span>
+                      <span className="text-white font-bold text-lg">
+                        {selectedDynamicPackage?.minELO} -{" "}
+                        {selectedDynamicPackage?.maxELO}
+                      </span>
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type="range"
+                        min="0"
+                        max={dynamicPackages.length - 1}
+                        value={sliderValue}
+                        onChange={(e) =>
+                          handleSliderChange(Number(e.target.value))
+                        }
+                        className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                        style={{
+                          background: `linear-gradient(90deg, #00C3FF 0%, #FFFF1C 100%)`,
+                        }}
+                      />
+
+                      {/* Slider Points */}
+                      <div className="flex justify-between mt-2">
+                        {dynamicPackages.map((pkg, index) => (
+                          <div
+                            key={pkg.id}
+                            className="flex flex-col items-center"
+                          >
+                            <div
+                              className={`w-3 h-3 rounded-full mb-2 ${
+                                index === sliderValue
+                                  ? "bg-pink-500"
+                                  : "bg-gray-500"
+                              }`}
+                            />
+                            <span className="text-xs text-gray-400 text-center">
+                              {pkg.minELO}-{pkg.maxELO}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Selected Package Details */}
+                  {selectedDynamicPackage && (
+                    <div className="bg-gray-900/30 rounded-lg p-4 mb-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4
+                          className={`${orbitron.className} text-lg font-bold text-white`}
+                        >
+                          {selectedDynamicPackage.name}
+                        </h4>
+                        <span className="text-green-400 font-bold text-xl">
+                          ${selectedDynamicPackage.price}
+                        </span>
+                      </div>
+                      <p className="text-gray-300 text-sm mb-4">
+                        {selectedDynamicPackage.description}
+                      </p>
+
+                      {/* Package Type and Duration */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                          {selectedDynamicPackage?.duration || "Flexible"}
+                        </span>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                          <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mr-1"></span>
+                          ELO-Based
+                        </span>
+                      </div>
+
+                      {/* Games and Teammates Controls */}
+                      {selectedDynamicPackage.type === "perteammate" && (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-300 font-semibold">
+                              No. of Games:
+                            </span>
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                className="px-3 py-1 rounded-full bg-red-900 text-white font-bold"
+                                onClick={() => {
+                                  setNumGamesMap((prev) => ({
+                                    ...prev,
+                                    [selectedDynamicPackage.id]: Math.max(
+                                      1,
+                                      (prev[selectedDynamicPackage.id] || 1) - 1
+                                    ),
+                                  }));
+                                }}
+                              >
+                                -
+                              </button>
+                              <span className="px-4 py-1 rounded text-white font-bold bg-gray-700 min-w-[3rem] text-center">
+                                {numGamesMap[selectedDynamicPackage.id] || 1}
+                              </span>
+                              <button
+                                type="button"
+                                className="px-3 py-1 rounded-full bg-red-900 text-white font-bold"
+                                onClick={() => {
+                                  setNumGamesMap((prev) => ({
+                                    ...prev,
+                                    [selectedDynamicPackage.id]:
+                                      (prev[selectedDynamicPackage.id] || 1) +
+                                      1,
+                                  }));
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-300 font-semibold">
+                              No. of Teammates:
+                            </span>
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                className="px-3 py-1 rounded-full bg-red-900 text-white font-bold"
+                                onClick={() => {
+                                  setNumTeammatesMap((prev) => ({
+                                    ...prev,
+                                    [selectedDynamicPackage.id]: Math.max(
+                                      1,
+                                      (prev[selectedDynamicPackage.id] || 1) - 1
+                                    ),
+                                  }));
+                                }}
+                              >
+                                -
+                              </button>
+                              <span className="px-4 py-1 rounded text-white font-bold bg-gray-700 min-w-[3rem] text-center">
+                                {numTeammatesMap[selectedDynamicPackage.id] ||
+                                  1}
+                              </span>
+                              <button
+                                type="button"
+                                className="px-3 py-1 rounded-full bg-red-900 text-white font-bold"
+                                onClick={() => {
+                                  setNumTeammatesMap((prev) => ({
+                                    ...prev,
+                                    [selectedDynamicPackage.id]:
+                                      (prev[selectedDynamicPackage.id] || 1) +
+                                      1,
+                                  }));
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* For pergame packages, show fixed teammate count */}
+                      {selectedDynamicPackage.type === "pergame" && (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-300 font-semibold">
+                              No. of Games:
+                            </span>
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                className="px-3 py-1 rounded-full bg-red-900 text-white font-bold"
+                                onClick={() => {
+                                  setNumGamesMap((prev) => ({
+                                    ...prev,
+                                    [selectedDynamicPackage.id]: Math.max(
+                                      1,
+                                      (prev[selectedDynamicPackage.id] || 1) - 1
+                                    ),
+                                  }));
+                                }}
+                              >
+                                -
+                              </button>
+                              <span className="px-4 py-1 rounded text-white font-bold bg-gray-700 min-w-[3rem] text-center">
+                                {numGamesMap[selectedDynamicPackage.id] || 1}
+                              </span>
+                              <button
+                                type="button"
+                                className="px-3 py-1 rounded-full bg-red-900 text-white font-bold"
+                                onClick={() => {
+                                  setNumGamesMap((prev) => ({
+                                    ...prev,
+                                    [selectedDynamicPackage.id]:
+                                      (prev[selectedDynamicPackage.id] || 1) +
+                                      1,
+                                  }));
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-300 font-semibold">
+                              No of Teammates:
+                            </span>
+                            <span className="px-4 py-1 rounded text-white font-bold bg-gray-600">
+                              {selectedDynamicPackage.requiredProviders}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              (Fixed)
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Ranks Selection */}
+                      {Array.isArray(selectedDynamicPackage.ranks) &&
+                        selectedDynamicPackage.ranks.length > 0 && (
+                          <div className="mt-4">
+                            <div className="text-sm text-gray-300 font-semibold mb-2">
+                              Ranks:
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedDynamicPackage.ranks.map(
+                                (rank: any, rankIdx: number) => (
+                                  <button
+                                    key={rankIdx}
+                                    type="button"
+                                    className={`px-3 py-1 rounded-full border-2 text-xs flex items-center gap-2 focus:outline-none transition-colors relative
+                                     ${
+                                       selectedRank?.name === rank.name
+                                         ? "bg-pink-500 text-white border-pink-400 shadow-lg scale-105"
+                                         : "bg-gray-700/40 text-gray-200 border-gray-600/30 hover:bg-pink-400 hover:text-white"
+                                     }
+                                   `}
+                                    onClick={() => {
+                                      setSelectedRank(
+                                        selectedRank?.name === rank.name
+                                          ? null
+                                          : rank
+                                      );
+                                    }}
+                                  >
+                                    {selectedRank?.name === rank.name && (
+                                      <span className="absolute left-1 top-1">
+                                        <svg
+                                          width="16"
+                                          height="16"
+                                          viewBox="0 0 20 20"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <circle
+                                            cx="10"
+                                            cy="10"
+                                            r="10"
+                                            fill="#fff"
+                                          />
+                                          <path
+                                            d="M6 10.5L9 13.5L14 8.5"
+                                            stroke="#EE2C81"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          />
+                                        </svg>
+                                      </span>
+                                    )}
+                                    <span className="font-bold ml-4">
+                                      {rank.name}
+                                    </span>
+                                    <span className="text-cyan-400">
+                                      +${rank.additionalCost}
+                                    </span>
+                                  </button>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                        <button
+                          className={`flex-1 px-4 py-3 flex items-center justify-center ${lato.className} relative group
+                          bg-gradient-to-r from-pink-500 gap-2 sm:gap-3 via-purple-500 to-cyan-400
+                          transition-all hover:scale-105 rounded-lg text-white font-semibold
+                        `}
+                          onClick={() => handleQuickPay(selectedDynamicPackage)}
+                        >
+                          QuickPay
+                        </button>
+                        <button
+                          className={`flex-1 px-4 py-3 flex items-center justify-center ${lato.className} relative group
+                          border-2 border-pink-500 text-pink-400
+                          transition-all hover:scale-105 hover:bg-pink-500 hover:text-white
+                          rounded-lg font-semibold
+                        `}
+                          onClick={() => handleCheckout(selectedDynamicPackage)}
+                        >
+                          Checkout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Regular Packages (Non-Dynamic) */}
             <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 max-w-7xl mx-auto">
-              {selectedService?.subpackages?.map(
-                (item: any, itemIndex: any) => (
+              {selectedService?.subpackages
+                ?.filter((item: any) => !item.dynamicPricing)
+                .map((item: any, itemIndex: any) => (
                   <div
                     key={item.id}
                     className="group transition-all duration-300 transform hover:scale-105"
@@ -510,32 +884,11 @@ const GamesComponent = () => {
                               <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
                                 {item?.duration || "Flexible"}
                               </span>
-                              {item?.dynamicPricing ? (
-                                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-                                  <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full mr-1"></span>
-                                  ELO-Based
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30">
-                                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-1"></span>
-                                  Fixed
-                                </span>
-                              )}
+                              <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30">
+                                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-1"></span>
+                                Fixed
+                              </span>
                             </div>
-
-                            {/* Show ELO Difference if dynamicPricing and minELO/maxELO are present */}
-                            {item.dynamicPricing &&
-                              typeof item.minELO === "number" &&
-                              typeof item.maxELO === "number" && (
-                                <div className="mb-3">
-                                  <div className="text-xs text-cyan-400 font-semibold">
-                                    ELO Range:
-                                  </div>
-                                  <div className="text-lg text-cyan-300 font-bold">
-                                    {item.minELO} - {item.maxELO}
-                                  </div>
-                                </div>
-                              )}
 
                             {item.type === "perteammate" && (
                               <div className="flex flex-col items-start">
@@ -754,24 +1107,24 @@ const GamesComponent = () => {
                         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-auto">
                           <button
                             className={`flex-1 px-3 sm:px-4 py-2 flex cursor-pointer items-center justify-center ${lato.className} relative cursor-pointer group
-                            bg-gradient-to-r from-pink-500 gap-2 sm:gap-3 via-purple-500 to-cyan-400
-                            transition-all
-                            hover:scale-105
-                            rounded-lg
-                            text-white font-semibold text-sm sm:text-base
-                          `}
+                          bg-gradient-to-r from-pink-500 gap-2 sm:gap-3 via-purple-500 to-cyan-400
+                          transition-all
+                          hover:scale-105
+                          rounded-lg
+                          text-white font-semibold text-sm sm:text-base
+                        `}
                             onClick={() => handleQuickPay(item)}
                           >
                             QuickPay
                           </button>
                           <button
                             className={`flex-1 px-3 sm:px-4 py-2 flex cursor-pointer items-center justify-center ${lato.className} relative cursor-pointer group
-                            border-2 border-pink-500 text-pink-400
-                            transition-all
-                            hover:scale-105 hover:bg-pink-500 hover:text-white
-                            rounded-lg
-                            font-semibold text-sm sm:text-base
-                          `}
+                          border-2 border-pink-500 text-pink-400
+                          transition-all
+                          hover:scale-105 hover:bg-pink-500 hover:text-white
+                          rounded-lg
+                          font-semibold text-sm sm:text-base
+                        `}
                             onClick={() => handleCheckout(item)}
                           >
                             Checkout
@@ -780,15 +1133,15 @@ const GamesComponent = () => {
                       </div>
                     </div>
                   </div>
-                )
-              ) || (
-                <div className="col-span-full text-center py-8 sm:py-12">
-                  <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📦</div>
-                  <p className="text-gray-400 text-base sm:text-lg">
-                    No packages available for this service yet.
-                  </p>
-                </div>
-              )}
+                )) ||
+                (dynamicPackages.length === 0 && (
+                  <div className="col-span-full text-center py-8 sm:py-12">
+                    <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📦</div>
+                    <p className="text-gray-400 text-base sm:text-lg">
+                      No packages available for this service yet.
+                    </p>
+                  </div>
+                ))}
             </div>
           </div>
         )}
