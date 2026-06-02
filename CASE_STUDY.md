@@ -3,7 +3,7 @@
 **Role:** Full-stack engineer (solo)
 **Stack:** Next.js 15 (App Router), React 19, TypeScript, Prisma, PostgreSQL, Socket.IO, Tailwind CSS, Ant Design, Stripe, PayPal, NextAuth/JWT, UploadThing, Vercel Blob, Nodemailer
 **Status:** Production
-**Live:** [diffed.gg](https://diffed.gg)
+**Live:** [diffed-swart.vercel.app](https://diffed-swart.vercel.app)
 
 ---
 
