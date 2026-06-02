@@ -1,3 +1,26 @@
+# Diffed.gg
+
+A three-sided marketplace for competitive gaming services — players hire vetted experts to climb ranked games, with secure checkout, real-time order chat, and fair provider payouts.
+
+**Live:** https://diffed-swart.vercel.app/
+
+## Engineering highlights
+
+- **Cross-game ranking engine.** Games model rank completely differently — some use tiered divisions (Diamond IV → Master → Grandmaster), others use straight ranks. A configuration-driven game-creation engine lets admins onboard any game and define its rank structure without code, normalizing every order's start/target rank onto a common scale for pricing and matching.
+- **Multi-currency wallet.** Players load funds via Stripe (and PayPal) into a platform wallet. A currency-exchange service converts at the rate from the day a transaction occurred, not today's rate.
+- **Real-time order flow.** Socket.IO powers live order chat between players and providers, plus an auto-refreshing provider queue.
+- **Full role + money model.** Player, provider, and admin experiences; provider activation; verification that releases earnings; payouts with a platform-fee split; dispute and refund flows.
+
+## Stack
+
+Next.js · TypeScript · Node.js · PostgreSQL · Stripe · PayPal · Socket.IO
+
+Built end-to-end in ~2 months on a 3-person team.
+
+---
+
+The guide below covers how to use the platform from the Admin, Customer, and Provider perspectives.
+
 ## Diffed.gg Product Guide
 
 This guide explains how to use Diffed.gg from three perspectives: Admin, Customer, and Provider. It focuses on what you can do, what to expect, and how the main flows work in everyday use. No technical setup is required to follow this guide.
